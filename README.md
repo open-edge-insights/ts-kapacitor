@@ -29,14 +29,14 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
 1. To start the mqtt-temp-sensor, please refer [tools/mqtt-temp-sensor/README.md](../tools/mqtt-temp-sensor/README.md) .
 
 2. In case, if SI wants to use the IEdgeInsights only for Point Data Analytics,
-   then comment Video use case containers ia_video_ingestion and ia_video_analytics in [docker_setup/docker-compose.yml](../docker_setup/docker-compose.yml)
+   then comment Video use case containers ia_video_ingestion and ia_video_analytics in [build/docker-compose.yml](../build/docker-compose.yml)
 
 3. Starting the EIS.
    To start the EIS in production mode, provisioning is required. For more information on provisioning
    please refer the [README](../README.md#provision-eis).
    After provisioning, please follow the below commands
    ```
-   cd docker_setup
+   cd build
    docker-compose build
    docker-compose up -d
    ```
@@ -50,7 +50,7 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
 
    Below is the snapshot of sample output of the ia_influxdbconnector command.
    ```
-   I0822 09:03:01.705940       1 pubManager.go:111] Published message: map[data:point_classifier_results,host=ia_telegraf,topic=temperature/simulated/0 temperature=19.29358085726703,ts=1566464581.6201317 1566464581621377117] 
+   I0822 09:03:01.705940       1 pubManager.go:111] Published message: map[data:point_classifier_results,host=ia_telegraf,topic=temperature/simulated/0 temperature=19.29358085726703,ts=1566464581.6201317 1566464581621377117]
    I0822 09:03:01.927094       1 pubManager.go:111] Published message: map[data:point_classifier_results,host=ia_telegraf,topic=temperature/simulated/0 temperature=19.29358085726703,ts=1566464581.6201317 1566464581621377117]
    I0822 09:03:02.704000       1 pubManager.go:111] Published message: map[data:point_data,host=ia_telegraf,topic=temperature/simulated/0 ts=1566464582.6218634,temperature=27.353740759929877 1566464582622771952]
    ```
@@ -140,7 +140,7 @@ For more information on the supported input and output plugins please refer
       timeout = "20s"
     ```
 
-  * Update the following details in the [etcd_pre_load.json](../../docker_setup/provision/config/etcd_pre_load.json) file.
+  * Update the following details in the [etcd_pre_load.json](../../build/provision/config/etcd_pre_load.json) file.
     ```
     "udfs": {
             "type": "python",

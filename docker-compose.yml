@@ -1,0 +1,39 @@
+version: '3.6'
+
+services:
+  ## Define DataAnalytics service
+  ia_data_analytics:
+    depends_on:
+      - ia_common
+    build:
+      context: $PWD/../TimeSeriesAnalytics
+      dockerfile: $PWD/../TimeSeriesAnalytics/Dockerfile
+      args:
+        EIS_VERSION: ${EIS_VERSION}
+        EIS_UID: ${EIS_UID}
+    image: ${DOCKER_REGISTRY}ia_data_analytics:${EIS_VERSION}
+    container_name: ia_data_analytics
+    hostname: ia_data_analytics
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      AppName: "TimeSeriesAnalytics"
+      DEV_MODE: ${DEV_MODE}
+      no_proxy: ${no_proxy}
+      CertType: "pem"
+    volumes:
+      - "./config/kapacitor.conf:/etc/kapacitor/kapacitor.conf"
+      - "./config/kapacitor_devmode.conf:/etc/kapacitor/kapacitor_devmode.conf"
+    devices:
+      - "/dev/dri"
+    user: ${EIS_UID}
+    secrets:
+      - ca_etcd
+      - etcd_TimeSeriesAnalytics_cert
+      - etcd_TimeSeriesAnalytics_key
+
+secrets:
+  etcd_TimeSeriesAnalytics_cert:
+    file: provision/Certificates/TimeSeriesAnalytics/TimeSeriesAnalytics_client_certificate.pem
+  etcd_TimeSeriesAnalytics_key:
+    file: provision/Certificates/TimeSeriesAnalytics/TimeSeriesAnalytics_client_key.pem
