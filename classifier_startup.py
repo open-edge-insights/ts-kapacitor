@@ -32,6 +32,7 @@ from eis.config_manager import ConfigManager
 from util.log import configure_logging, LOG_LEVELS
 from distutils.util import strtobool
 import os
+import sys
 from util.util import Util
 
 TEMP_KAPACITOR_DIR = "/tmp/"
@@ -96,6 +97,10 @@ def read_config(client, dev_mode, app_name, config_key_path):
     """
     configfile = client.GetConfig("/{0}/{1}".format(
                  app_name, config_key_path))
+    with open('./schema.json', "rb") as infile:
+        schema = infile.read()
+        if (Util.validate_json(schema, configfile)) is not True:
+            sys.exit(1)
     config = json.loads(configfile)
     os.environ['KAPACITOR_INFLUXDB_0_USERNAME'] = config['influxdb'
                                                          ]['username']

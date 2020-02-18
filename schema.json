@@ -1,0 +1,26 @@
+{
+  "definitions": {},
+  "type": "object",
+  "required": [
+    "influxdb"
+  ],
+  "properties": {
+    "influxdb": {
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "properties": {
+        "username": {
+          "type": "string",
+          "pattern": "^(.*)$"
+        },
+        "password": {
+          "type": "string",
+          "pattern": "^(.*)$"
+        }
+      }
+    }
+  }
+}

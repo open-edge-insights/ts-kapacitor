@@ -41,4 +41,5 @@ RUN apt-get remove -y wget && \
     apt-get remove curl && \
     apt-get autoremove -y
 
+COPY schema.json .
 ENTRYPOINT ["python3.6", "./classifier_startup.py"]
