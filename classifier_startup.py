@@ -32,7 +32,6 @@ from eis.config_manager import ConfigManager
 from util.log import configure_logging, LOG_LEVELS
 from distutils.util import strtobool
 import os
-import sys
 from util.util import Util
 
 TEMP_KAPACITOR_DIR = "/tmp/"
@@ -54,7 +53,7 @@ def start_classifier(udf_type, udf_name):
     """
     try:
         if udf_type == "go":
-            logger.info("Running Go based UDF ...")
+            logger.info("Running Go based UDF ... {0}".format(udf_name))
             subprocess.call("go run ./udf/" + udf_name + ".go &", shell=True)
         elif udf_type == "python":
             logger.info("Running Python based UDF ...")
@@ -97,10 +96,6 @@ def read_config(client, dev_mode, app_name, config_key_path):
     """
     configfile = client.GetConfig("/{0}/{1}".format(
                  app_name, config_key_path))
-    with open('./schema.json', "rb") as infile:
-        schema = infile.read()
-        if (Util.validate_json(schema, configfile)) is not True:
-            sys.exit(1)
     config = json.loads(configfile)
     os.environ['KAPACITOR_INFLUXDB_0_USERNAME'] = config['influxdb'
                                                          ]['username']
@@ -147,6 +142,7 @@ def start_kapacitor(client,
             # Populate the certificates for kapacitor server
             kapacitor_conf = TEMP_KAPACITOR_DIR + KAPACITOR_PROD
             shutil.copy("/EIS/config/" + KAPACITOR_PROD, kapacitor_conf)
+
             os.environ["KAPACITOR_URL"] = "{}{}".format(
                                                 HTTPS_SCHEME,
                                                 KAPACITOR_HOSTNAME_PORT)
@@ -213,12 +209,11 @@ def enable_classifier_task(host_name, dev_mode, tick_script, task_name):
     while(retry < retry_count):
         definePointClCmd = ["kapacitor", "-skipVerify", "define",
                             task_name, "-tick",
-                            "tick_scripts/" + tick_script + ".tick"]
+                            "tick_scripts/" + tick_script]
 
         if (subprocess.check_call(definePointClCmd) == SUCCESS):
             definePointClCmd = ["kapacitor", "-skipVerify", "enable",
                                 task_name]
-
             if (subprocess.check_call(definePointClCmd) == SUCCESS):
                 logger.info("Kapacitor Tasks Enabled Successfully")
                 break
@@ -255,6 +250,7 @@ if __name__ == '__main__':
     config = json.loads(configfile)
 
     # TODO Enable support for more than one UDF simultaneously
+
     udf_type = config['udfs']['type'].lower()
     udf_name = config['udfs']['name']
     socket_path = config['udfs']['socket_path']
@@ -279,12 +275,14 @@ if __name__ == '__main__':
                            app_name,
                            config_key_path,
                            socket_path) is True):
+            logger.info("Enabling {0}".format(tick_script))
             enable_classifier_task(host_name, dev_mode, tick_script, task_name)
         else:
             logger.info("Kapacitor is not starting.So Exiting...")
             exit(FAILURE)
+
         logger.info(
-            "DataAnalytics Initialized Successfully.Ready to Receive the \
+            "Kapacitor Initialized Successfully.Ready to Receive the \
             Data....")
         while(True):
             time.sleep(10)

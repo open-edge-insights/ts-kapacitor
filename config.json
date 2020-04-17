@@ -7,7 +7,7 @@
         "type": "go",
         "name": "go_classifier",
         "socket_path": "/tmp/point_classifier",
-        "tick_script": "go_point_classifier",
+        "tick_script": "go_point_classifier.tick",
         "task_name": "go_point_classifier"
     }
 }
