@@ -10,8 +10,8 @@ services:
       dockerfile: $PWD/../Kapacitor/Dockerfile
       args:
         EIS_VERSION: ${EIS_VERSION}
-        EIS_UID: ${EIS_UID}
         KAPACITOR_VERSION: ${KAPACITOR_VERSION}
+        INTELPYTHON_VERSION: ${INTELPYTHON_VERSION}
     image: ${DOCKER_REGISTRY}ia_kapacitor:${EIS_VERSION}
     container_name: ia_kapacitor
     hostname: ia_kapacitor

@@ -58,7 +58,7 @@ def start_classifier(udf_type, udf_name):
             subprocess.call("go run ./udf/" + udf_name + ".go &", shell=True)
         elif udf_type == "python":
             logger.info("Running Python based UDF ...")
-            subprocess.call("python3.6 ./udf/" + udf_name + ".py &",
+            subprocess.call("python3.7 ./udf/" + udf_name + ".py &",
                             shell=True)
         else:
             logger.error("Not a compatible type, please select \
