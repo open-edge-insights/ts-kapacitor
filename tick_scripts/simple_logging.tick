@@ -1,0 +1,10 @@
+
+dbrp "datain"."autogen"
+
+var data0 = stream
+        |from()
+                .database('datain')
+                .retentionPolicy('autogen')
+                .measurement('point_data')
+        |log()
+		.prefix('EIS_PREFIX')

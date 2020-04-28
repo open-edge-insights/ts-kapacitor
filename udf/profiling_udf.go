@@ -159,7 +159,13 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
+
 	l, err := net.ListenUnix("unix", addr)
+	if err != nil {
+		glog.Fatal(err)
+	}
+
+	err = os.Chmod(*socketPath, 0755)
 	if err != nil {
 		glog.Fatal(err)
 	}

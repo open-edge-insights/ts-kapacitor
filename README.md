@@ -136,20 +136,31 @@ For more information on the supported input and output plugins please refer
     for example
     ```
     [udf.functions.customUDF]
-      socket = $SOCKET_PATH
+      socket = "/tmp/socket_file"
       timeout = "20s"
     ```
 
-  * Update the following details in the [etcd_pre_load.json](../../build/provision/config/etcd_pre_load.json) file.
+  * In case of go/python based udf, update the values of keys named "type", "name", "tick_script", "task_name", in the
+    [config.json](config.json)file.
+    for example
     ```
     "udfs": {
             "type": "python",
             "name": "py_classifier",
-            "socket_path": "/tmp/point_classifier",
             "tick_script": "py_point_classifier.tick",
             "task_name": "py_point_classifier"
         }
     ```
+
+  * In case of, tick only udf, update the values of keys named "tick_script", "task_name", in the [config.json](config.json)file.
+    for example
+    ```
+    "udfs": {
+            "tick_script": "simple_logging.tick",
+            "task_name": "simple_logging"
+        }
+    ```
+
     ### Note:
     1. Currently only one UDF is supported at a time and by default, go_classifier is configured.
 
@@ -157,5 +168,12 @@ For more information on the supported input and output plugins please refer
       ```
        @py_point_classifier()
       ```
-
+    3. go/python based UDF should listen on the same socket file as mentioned in the the udf section in the
+       [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
+       for example
+       ```
+       [udf.functions.customUDF]
+         socket = "/tmp/socket_file"
+         timeout = "20s"
+       ```
   * Do the [provisioning](../README.md#provision-eis) and run the EIS stack.

@@ -136,7 +136,7 @@ func (acc *accepter) Accept(conn net.Conn) {
 	}()
 }
 
-var socketPath = flag.String("socket", os.Getenv("SOCKET_PATH"), "Where to create the unix socket")
+var socketPath = flag.String("socket", "/tmp/point_classifier", "Where to create the unix socket")
 
 func main() {
 	flag.Parse()
@@ -149,7 +149,13 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
+
 	l, err := net.ListenUnix("unix", addr)
+	if err != nil {
+		glog.Fatal(err)
+	}
+
+	err = os.Chmod(*socketPath, 0755)
 	if err != nil {
 		glog.Fatal(err)
 	}

@@ -69,17 +69,6 @@ def start_classifier(udf_type, udf_name):
         return False
 
 
-def grant_permission_socket(socket_path):
-    """Grants chmod 0x777 permission for the classifier's socket file
-    """
-    while not os.path.exists(socket_path):
-        pass
-    logger.info("Socket file present...")
-    if os.path.isfile(socket_path):
-        os.chmod(socket_path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-    logger.info("Permission Granted for Socket files")
-
-
 def write_cert(file_name, cert):
     """Write certificate to given file path
     """
@@ -118,8 +107,7 @@ def start_kapacitor(client,
                     host_name,
                     dev_mode,
                     app_name,
-                    config_key_path,
-                    socket_path):
+                    config_key_path):
     """Starts the kapacitor Daemon in the background
     """
     HTTP_SCHEME = "http://"
@@ -150,9 +138,6 @@ def start_kapacitor(client,
             os.environ["KAPACITOR_INFLUXDB_0_URLS_0"] = "{}{}".format(
                 HTTPS_SCHEME, INFLUXDB_HOSTNAME_PORT)
 
-        subprocess.run("sed -i 's#socket = .*#socket = \"" +
-                       socket_path + "\"#'g " + kapacitor_conf,
-                       shell=True)
         read_config(client, dev_mode, app_name, config_key_path)
         subprocess.run("kapacitord -hostname " + host_name +
                        " -config " + kapacitor_conf + " &", shell=True)
@@ -251,15 +236,20 @@ if __name__ == '__main__':
 
     # TODO Enable support for more than one UDF simultaneously
 
-    udf_type = config['udfs']['type'].lower()
-    udf_name = config['udfs']['name']
-    socket_path = config['udfs']['socket_path']
+    program_based_udf = False
+    if 'type' in config['udfs'].keys():
+        udf_type = config['udfs']['type'].lower()
+        if udf_type == "go" or udf_type == "python":
+            program_based_udf = True
+
+    if program_based_udf:
+        udf_name = config['udfs']['name']
+
     tick_script = config['udfs']['tick_script']
     task_name = config['udfs']['task_name']
 
     logger = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),
                                __name__, dev_mode)
-    os.environ["SOCKET_PATH"] = socket_path
 
     logger.info("=============== STARTING data_analytics ==============")
 
@@ -267,25 +257,27 @@ if __name__ == '__main__':
     if not host_name:
         exit_with_failure_message('Kapacitor hostname is not Set in the \
          container.So exiting..')
-    if (start_classifier(udf_type, udf_name) is True):
-        grant_permission_socket(socket_path)
-        if(start_kapacitor(config_client,
-                           host_name,
-                           dev_mode,
-                           app_name,
-                           config_key_path,
-                           socket_path) is True):
-            logger.info("Enabling {0}".format(tick_script))
-            enable_classifier_task(host_name, dev_mode, tick_script, task_name)
+
+    if program_based_udf:
+        if (start_classifier(udf_type, udf_name) is True):
+            logger.info("Classifier started successfully")
         else:
-            logger.info("Kapacitor is not starting.So Exiting...")
+            logger.info("Classifier is not able to start.Fix all the Errors &\
+                        try again")
             exit(FAILURE)
 
+    if(start_kapacitor(config_client,
+                       host_name,
+                       dev_mode,
+                       app_name,
+                       config_key_path) is True):
+        logger.info("Enabling {0}".format(tick_script))
+        enable_classifier_task(host_name, dev_mode, tick_script, task_name)
         logger.info(
             "Kapacitor Initialized Successfully.Ready to Receive the \
             Data....")
         while(True):
             time.sleep(10)
     else:
-        logger.info("Classifier is not able to start.Fix all the Errors &\
-                    try again")
+        logger.info("Kapacitor is not starting.So Exiting...")
+        exit(FAILURE)

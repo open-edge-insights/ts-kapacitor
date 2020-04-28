@@ -24,7 +24,7 @@ import json
 from kapacitor.udf.agent import Agent, Handler, Server
 from kapacitor.udf import udf_pb2
 import signal
-
+import stat
 import logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s:%(name)s: %(message)s')
@@ -89,7 +89,8 @@ class Accepter(object):
 
 
 if __name__ == '__main__':
-    path = os.environ["SOCKET_PATH"]
+    path = "/tmp/point_classifier"
     server = Server(path, Accepter())
+    os.chmod(path,stat.S_IRWXU|stat.S_IRGRP|stat.S_IXGRP|stat.S_IROTH|stat.S_IXOTH)
     logger.info("Started server")
     server.serve()
