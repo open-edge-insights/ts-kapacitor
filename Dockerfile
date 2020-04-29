@@ -54,7 +54,7 @@ COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
 COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
 
 RUN cd ${PY_WORK_DIR}/libs/ConfigManager/python && \
-    python3.7 setup.py install && \
+    python3.7 setup.py.in install && \
     cd ../../../
 
 # Installing required python library
