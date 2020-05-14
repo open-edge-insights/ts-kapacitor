@@ -1,6 +1,7 @@
 # Dockerfile for Point Data Analytics
 ARG EIS_VERSION
-FROM ia_eisbase:$EIS_VERSION as eisbase
+ARG DOCKER_REGISTRY
+FROM ${DOCKER_REGISTRY}ia_eisbase:$EIS_VERSION as eisbase
 LABEL description="Kapacitor image"
 
 ENV PY_WORK_DIR /EIS
@@ -46,7 +47,7 @@ RUN git clone https://github.com/kragniz/python-etcd3 && \
     cd .. && \
     rm -rf python-etcd3
 
-FROM ia_common:$EIS_VERSION as common
+FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
 
 FROM eisbase
 

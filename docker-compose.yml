@@ -12,6 +12,7 @@ services:
         EIS_VERSION: ${EIS_VERSION}
         KAPACITOR_VERSION: ${KAPACITOR_VERSION}
         INTELPYTHON_VERSION: ${INTELPYTHON_VERSION}
+        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
     image: ${DOCKER_REGISTRY}ia_kapacitor:${EIS_VERSION}
     container_name: ia_kapacitor
     hostname: ia_kapacitor
