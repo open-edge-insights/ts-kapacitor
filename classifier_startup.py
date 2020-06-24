@@ -166,7 +166,7 @@ def kapacitor_port_open(host_name):
     """
     if process_zombie(KAPACITOR_NAME):
         exit_with_failure_message("Kapacitor fail to start.Please verify the \
-            ia_data_analytics logs for UDF/kapacitor Errors.")
+            ia_kapacitor logs for UDF/kapacitor Errors.")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     logger.info("Attempting to connect to Kapacitor on port 9092")
     result = sock.connect_ex((host_name, KAPACITOR_PORT))
@@ -251,7 +251,7 @@ if __name__ == '__main__':
     logger = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),
                                __name__, dev_mode)
 
-    logger.info("=============== STARTING data_analytics ==============")
+    logger.info("=============== STARTING kapacitor ==============")
 
     host_name = os.environ["KAPACITOR_SERVER"]
     if not host_name:
