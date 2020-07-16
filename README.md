@@ -26,7 +26,7 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
 
 ## Starting the example
 
-1. To start the mqtt-temp-sensor, please refer [tools/mqtt-temp-sensor/README.md](../tools/mqtt-temp-sensor/README.md) .
+1. To start the mqtt-temp-sensor, please refer [tools/mqtt-publisher/README.md](../tools/mqtt-publisher/README.md).
 
 2. In case, if SI wants to use the IEdgeInsights only for Point Data Analytics,
    then comment Video use case containers ia_video_ingestion and ia_video_analytics in [build/docker-compose.yml](../build/docker-compose.yml)
@@ -127,9 +127,23 @@ For more information on the supported input and output plugins please refer
     and in developer mode the config file would be
     [Kapacitor/config/kapacitor_devmode.conf](./config/kapacitor_devmode.conf)
 
+## Custom UDFs available in the [udfs](udfs) directory
+
+  * UNIX Socket based UDFs
+
+    1. go_classifier.go: Filter the points based on temperature (data > 20 and < 25 filtered out).
+
+    2. py_classifier.py: Filter the points based on temperature (data > 20 and < 25 filtered out).
+
+    3. profiling_udf.go: Add the profiling (time taken to process the data) data in the points.
+
+    4. temperature_classifier.go: Filter the points based on temperature (data < 25 filtered out).
+
+    5. humidity_classifier.py: Filter the points based on humidity (data < 25 filtered out).
+
 ## Steps to configure the UDFs in kapacitor.
 
-  * Keep the custom UDFs in the [udf](udf) directory and the TICK script in the [tick_scripts](tick_scripts) directory.
+  * Keep the custom UDFs in the [udfs](udfs) directory and the TICK script in the [tick_scripts](tick_scripts) directory.
 
   * Modify the udf section in the [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
     Mention the custom udf in the conf
@@ -144,30 +158,40 @@ For more information on the supported input and output plugins please refer
     [config.json](config.json)file.
     for example
     ```
-    "udfs": {
-            "type": "python",
-            "name": "py_classifier",
-            "tick_script": "py_point_classifier.tick",
-            "task_name": "py_point_classifier"
-        }
+    "task": [{
+         "tick_script": "py_point_classifier.tick",
+         "task_name": "py_point_classifier",
+         "udfs": [{
+             "type": "python",
+             "name": "py_classifier"
+         }]
+    }]
     ```
 
   * In case of, tick only udf, update the values of keys named "tick_script", "task_name", in the [config.json](config.json)file.
     for example
     ```
-    "udfs": {
-            "tick_script": "simple_logging.tick",
-            "task_name": "simple_logging"
-        }
+    "task": [{
+         "tick_script": "simple_logging.tick",
+         "task_name": "simple_logging"
+         }]
     ```
 
     ### Note:
-    1. Currently only one UDF is supported at a time and by default, go_classifier is configured.
+    1. By default, go_classifier is configured.
 
-    2. Mention the task name the same as mentioned in the TICK script udf function.
-      ```
+    2. Mention the TICK script udf function same as configured in the Kapacitor config file.
+       For example, UDF Node in the TICK script
+       ```
        @py_point_classifier()
-      ```
+       ```
+       should be same as
+       ```
+       [udf.functions.py_point_classifier]
+          socket = "/tmp/socket_file"
+          timeout = "20s"
+       ```
+
     3. go/python based UDF should listen on the same socket file as mentioned in the the udf section in the
        [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
        for example
@@ -177,3 +201,7 @@ For more information on the supported input and output plugins please refer
          timeout = "20s"
        ```
   * Do the [provisioning](../README.md#provision-eis) and run the EIS stack.
+
+## Step to run the samples of multiple UDFs in a single task and mulitple tasks using single UDF
+
+  * please refer to the [samples/README](samples/README.md)

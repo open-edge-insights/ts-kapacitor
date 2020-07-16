@@ -91,6 +91,7 @@ class Accepter(object):
 if __name__ == '__main__':
     path = "/tmp/point_classifier"
     server = Server(path, Accepter())
-    os.chmod(path,stat.S_IRWXU|stat.S_IRGRP|stat.S_IXGRP|stat.S_IROTH|stat.S_IXOTH)
+    os.chmod(path, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP |
+             stat.S_IROTH | stat.S_IXOTH)
     logger.info("Started server")
     server.serve()

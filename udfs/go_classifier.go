@@ -47,7 +47,7 @@ func newMirrorHandler(agent *agent.Agent) *mirrorHandler {
 
 // Return the InfoResponse. Describing the properties of this UDF agent.
 func (*mirrorHandler) Info() (*agent.InfoResponse, error) {
-	glog.V(1).Infof("1. Info methos called")
+	glog.V(1).Infof("1. Info method called")
 	info := &agent.InfoResponse{
 		Wants:    agent.EdgeType_STREAM,
 		Provides: agent.EdgeType_STREAM,

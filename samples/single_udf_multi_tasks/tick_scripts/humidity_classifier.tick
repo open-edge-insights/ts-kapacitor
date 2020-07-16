@@ -1,0 +1,14 @@
+
+dbrp "datain"."autogen"
+
+var data1 = stream
+        |from()
+                .database('datain')
+                .retentionPolicy('autogen')
+                .measurement('point_data')
+        @humidity_classifier()
+        |influxDBOut()
+                .buffer(0)
+                .database('datain')
+                .measurement('humidity_classifier_results')
+                .retentionPolicy('autogen')      
