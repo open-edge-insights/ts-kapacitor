@@ -3,10 +3,13 @@
         "username": "admin",
         "password": "admin123"
     },
-    "udfs": {
-        "type": "go",
-        "name": "go_classifier",
-        "tick_script": "go_point_classifier.tick",
-        "task_name": "go_point_classifier"
-    }
+    "task": [{
+	 "tick_script": "go_point_classifier.tick",
+         "task_name": "go_point_classifier",
+         "udfs": [{
+             "type": "go",
+             "name": "go_classifier"
+         }]
+       }
+    ]
 }
