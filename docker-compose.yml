@@ -39,6 +39,7 @@ services:
     network_mode: host
     read_only: true
     restart: unless-stopped
+    ipc: "none"
     environment:
       AppName: "Kapacitor"
       DEV_MODE: ${DEV_MODE}
