@@ -54,11 +54,11 @@ def start_classifier(udf_type, udf_name):
     try:
         if udf_type == "go":
             logger.info("Running Go based UDF ... {0}".format(udf_name))
-            subprocess.call("go run ./udf/" + udf_name + ".go &", shell=True)
+            subprocess.Popen(["go", "run", "./udf/" + udf_name + ".go", "&"])
         elif udf_type == "python":
             logger.info("Running Python based UDF ...")
-            subprocess.call("python3.7 ./udf/" + udf_name + ".py &",
-                            shell=True)
+            subprocess.Popen(["python3.7", "./udf/" + udf_name + ".py", "&"])
+
         else:
             logger.error("Not a compatible type, please select \
                           either go or python")
@@ -139,9 +139,8 @@ def start_kapacitor(client,
                 HTTPS_SCHEME, INFLUXDB_HOSTNAME_PORT)
 
         read_config(client, dev_mode, app_name, config_key_path)
-        subprocess.run("kapacitord -hostname " + host_name +
-                       " -config " + kapacitor_conf + " &", shell=True)
-
+        subprocess.Popen(["kapacitord", "-hostname", host_name,
+                         "-config", kapacitor_conf, "&"])
         logger.info("Started kapacitor Successfully...")
         return True
     except Exception as e:
@@ -153,10 +152,19 @@ def process_zombie(process_name):
     """Checks the given process is Zombie State & returns True or False
     """
     try:
-        out = subprocess.check_output('ps -eaf | grep ' + process_name +
-                                      '| grep -v grep | grep defunct | wc -l',
-                                      shell=True).strip()
-        return True if (out == b'1') else False
+        out1 = subprocess.run(["ps", "-eaf"], stdout=subprocess.PIPE,
+                              check=False)
+        out2 = subprocess.run(["grep", process_name], input=out1.stdout,
+                              stdout=subprocess.PIPE, check=False)
+        out3 = subprocess.run(["grep", "-v", "grep"], input=out2.stdout,
+                              stdout=subprocess.PIPE, check=False)
+        out4 = subprocess.run(["grep", "defunct"], input=out3.stdout,
+                              stdout=subprocess.PIPE, check=False)
+        out = subprocess.run(["wc", "-l"], input=out4.stdout,
+                             stdout=subprocess.PIPE, check=False)
+        out = out.stdout.decode('utf-8').rstrip("\n")
+
+        return True if (out == '1') else False
     except Exception as e:
         logger.info("Exception Occured in Starting Kapacitor " + str(e))
 
