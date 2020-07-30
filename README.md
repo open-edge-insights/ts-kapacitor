@@ -141,12 +141,20 @@ For more information on the supported input and output plugins please refer
 
     5. humidity_classifier.py: Filter the points based on humidity (data < 25 filtered out).
 
+  * Process based UDFs
+
+    1. rfc_classifier.py: Random Forest Classification algo sample.
+
 ## Steps to configure the UDFs in kapacitor.
 
   * Keep the custom UDFs in the [udfs](udfs) directory and the TICK script in the [tick_scripts](tick_scripts) directory.
 
+  * Keep the training data set (if any) required for the custom UDFs in the [training_data_sets](training_data_sets) directory.
+
+  * For python UDFs, if any external library dependency needs to be installed. It can be added in the [requirements.txt](requirements.txt) file.
+
   * Modify the udf section in the [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
-    Mention the custom udf in the conf
+    Mention the custom UDF in the conf
     for example
     ```
     [udf.functions.customUDF]
@@ -154,7 +162,7 @@ For more information on the supported input and output plugins please refer
       timeout = "20s"
     ```
 
-  * In case of go/python based udf, update the values of keys named "type", "name", "tick_script", "task_name", in the
+  * In case of go/python based UDF, update the values of keys named "type", "name", "tick_script", "task_name", in the
     [config.json](config.json)file.
     for example
     ```
@@ -168,7 +176,7 @@ For more information on the supported input and output plugins please refer
     }]
     ```
 
-  * In case of, tick only udf, update the values of keys named "tick_script", "task_name", in the [config.json](config.json)file.
+  * In case of, tick only UDF, update the values of keys named "tick_script", "task_name", in the [config.json](config.json)file.
     for example
     ```
     "task": [{
@@ -178,7 +186,7 @@ For more information on the supported input and output plugins please refer
     ```
 
     ### Note:
-    1. By default, go_classifier is configured.
+    1. By default, go_classifier and rfc_classifier is configured.
 
     2. Mention the TICK script udf function same as configured in the Kapacitor config file.
        For example, UDF Node in the TICK script
@@ -194,12 +202,32 @@ For more information on the supported input and output plugins please refer
 
     3. go/python based UDF should listen on the same socket file as mentioned in the the udf section in the
        [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
-       for example
+       For example
        ```
        [udf.functions.customUDF]
          socket = "/tmp/socket_file"
          timeout = "20s"
        ```
+
+    4. In case of process based UDFs, provide the correct path of the code within the container
+       in the [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
+       By default, the files and directories will be copied into the container under "/EIS" director. It is recommended to keep the custom UDFs
+       in the [udfs](udfs) directory, the path of the custom UDF will be "/EIS/udfs/customUDF_name" as shown in below example.
+       If the UDF is kept in different path please modify the path in the args accordingly.
+
+       The PYTHONPATH of the Kapacitor agent directory is "/EIS/go/src/github.com/influxdata/kapacitor/udf/agent/py/". How to pass
+       it is shown in the below example.
+
+       For example
+       ```
+       [udf.functions.customUDF]
+          prog = "python3.7"
+          args = ["-u", "/EIS/udfs/customUDF"]
+          timeout = "60s"
+          [udf.functions.customUDF.env]
+             PYTHONPATH = "/EIS/go/src/github.com/influxdata/kapacitor/udf/agent/py/"
+       ```
+
   * Do the [provisioning](../README.md#provision-eis) and run the EIS stack.
 
 ## Step to run the samples of multiple UDFs in a single task and mulitple tasks using single UDF
