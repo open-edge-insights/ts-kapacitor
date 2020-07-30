@@ -1,0 +1,19 @@
+dbrp "datain"."autogen"
+
+var data0 = stream
+        |from()
+                .database('datain')
+                .retentionPolicy('autogen')
+                .measurement('ts_data')
+        |window()
+	.period(3s)
+        .every(3s)
+
+data0
+
+        @rfc()
+        |influxDBOut()
+                .database('datain')
+                .measurement('rfc_results')
+                .retentionPolicy('autogen')
+

@@ -10,6 +10,10 @@
              "type": "go",
              "name": "go_classifier"
          }]
+       },
+       {
+	 "tick_script": "rfc_task.tick",
+         "task_name": "random_forest_sample"
        }
     ]
 }

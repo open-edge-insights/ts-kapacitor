@@ -50,15 +50,16 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh &
 
 ENV PATH $PATH:${PY_WORK_DIR}/miniconda/bin
 ARG INTELPYTHON_VERSION
-RUN conda config --add channels intel\
+RUN conda clean --all \
+    && conda config --add channels intel \
     && conda install  -y intelpython3_core=$INTELPYTHON_VERSION python=3 \
-    && conda clean --all \
     && apt-get update \
     && apt-get install -y g++ \
     && apt-get autoremove -y \
     && rm Miniconda3-latest-Linux-x86_64.sh \
     && mv ${PY_WORK_DIR}/miniconda/bin/python3.7 /usr/local/bin \
-    && mv ${PY_WORK_DIR}/miniconda/lib/python3.7/ /usr/local/lib/
+    && mv ${PY_WORK_DIR}/miniconda/lib/python3.7/ /usr/local/lib/ \
+    && cp -a ${PY_WORK_DIR}/miniconda/lib/. /usr/local/lib/
 
 # Installing EIS related libs
 RUN git clone https://github.com/kragniz/python-etcd3 && \
@@ -81,6 +82,8 @@ RUN cd ${PY_WORK_DIR}/libs/ConfigManager/python && \
 
 # Installing required python library
 RUN python3.7 -m pip install jsonschema==3.2.0
+COPY requirements.txt ./
+RUN  python3.7 -m pip install -r requirements.txt
 
 # Adding classifier program
 COPY . ./
