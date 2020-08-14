@@ -50,16 +50,17 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh &
 
 ENV PATH $PATH:${PY_WORK_DIR}/miniconda/bin
 ARG INTELPYTHON_VERSION
+
+# Installing Intel distribution python and daal4py
 RUN conda clean --all \
     && conda config --add channels intel \
-    && conda install  -y intelpython3_core=$INTELPYTHON_VERSION python=3 \
+    && conda install -y intelpython3_core=$INTELPYTHON_VERSION python=3 \
+    && conda install -y -c intel -c conda-forge mpich daal numpy \
+    && conda install -y -c intel daal4py \
     && apt-get update \
     && apt-get install -y g++ \
     && apt-get autoremove -y \
-    && rm Miniconda3-latest-Linux-x86_64.sh \
-    && mv ${PY_WORK_DIR}/miniconda/bin/python3.7 /usr/local/bin \
-    && mv ${PY_WORK_DIR}/miniconda/lib/python3.7/ /usr/local/lib/ \
-    && cp -a ${PY_WORK_DIR}/miniconda/lib/. /usr/local/lib/
+    && rm Miniconda3-latest-Linux-x86_64.sh
 
 # Installing EIS related libs
 RUN git clone https://github.com/kragniz/python-etcd3 && \
@@ -68,6 +69,13 @@ RUN git clone https://github.com/kragniz/python-etcd3 && \
     python3.7 setup.py install && \
     cd .. && \
     rm -rf python-etcd3
+
+# Installing external dependencies using conda
+COPY conda_requirements.txt ./
+RUN while read requirement; do conda install --yes $requirement; done < conda_requirements.txt \
+    && cp ${PY_WORK_DIR}/miniconda/bin/python3.7 /usr/local/bin \
+    && cp -r ${PY_WORK_DIR}/miniconda/lib/python3.7/ /usr/local/lib/ \
+    && cp -a ${PY_WORK_DIR}/miniconda/lib/. /usr/local/lib/
 
 FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
 
@@ -97,6 +105,6 @@ COPY schema.json .
 RUN apt-get remove -y wget && \
     apt-get remove -y git && \
     apt-get remove curl && \
-    rm -rf miniconda requirements.txt
+    rm -rf miniconda requirements.txt conda_requirements.txt
 
 ENTRYPOINT ["python3.7", "./classifier_startup.py"]
