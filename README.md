@@ -151,7 +151,7 @@ For more information on the supported input and output plugins please refer
 
   * Keep the training data set (if any) required for the custom UDFs in the [training_data_sets](training_data_sets) directory.
 
-  * For python UDFs, if any external library dependency needs to be installed. It can be added in the [requirements.txt](requirements.txt) file.
+  * For python UDFs, if any external python package dependency needs to be installed. To install the python package using pip, it can be added in the [requirements.txt](requirements.txt) file and to install the python package using conda, it can be added in the [conda_requirements.txt](conda_requirements.txt) file.
 
   * Modify the udf section in the [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
     Mention the custom UDF in the conf
