@@ -6,6 +6,7 @@ import sys
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+import daal4py as d4p
 
 import logging
 logging.basicConfig(level=logging.DEBUG,
@@ -25,13 +26,24 @@ class RfcHandler(Handler):
         training = pd.read_csv('/EIS/training_data_sets/Log_rf.csv')
         training = training.sample(frac=1)
 
-        y = training.label
+        y = training[['label']]
         X = training.iloc[:, :-1]
         X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                             test_size=0.2,
-                                                            random_state=20)
-        self.rfc = RandomForestClassifier(n_estimators=600)
-        self.rfc.fit(X_train, y_train)
+                                                            random_state=20,
+                                                            stratify=y)
+        # The number of cores is tuned based on the hardware and dataset
+        no_of_cores = 10
+        d4p.daalinit(no_of_cores)
+        # maxDepth, numOfTree are tuned based on dataset
+        maxDepth = 50
+        numOfTree = 600
+        train_algo = d4p.decision_forest_classification_training(maxTreeDepth=maxDepth,
+                                                                 nClasses=2, nTrees=numOfTree,
+                                                                 engine=d4p.engines_mt2203(seed=0),
+                                                                 varImportance='MDI', bootstrap=True)
+
+        self.train_result = train_algo.compute(X_train, y_train)
         logging.info("training complete...")
 
     def info(self):
@@ -159,8 +171,11 @@ class RfcHandler(Handler):
                     'Message.Log.Name38': jsonObj['Message']['Log']['Name38']},
                     ignore_index=True)
 
-        predictions = self.rfc.predict(df)
-        self.pred.append(predictions)
+        # Inference with daal4py 
+        self.predict_algo = d4p.decision_forest_classification_prediction(2)
+        self.predict_result = self.predict_algo.compute(df, self.train_result.model)
+        self.rfc_prediction_pred = self.predict_result.prediction
+        self.pred.append(self.rfc_prediction_pred)
         self.assetId.append(jsonObj['NameOFLog'])
         self.batchTS.append(point.time)
 
