@@ -34,8 +34,6 @@ import (
 	"github.com/influxdata/kapacitor/udf/agent"
 )
 
-const min_threshold float64 = 20.00
-const max_threshold float64 = 25.00
 
 // Mirrors all points it receives back to Kapacitor
 type mirrorHandler struct {
