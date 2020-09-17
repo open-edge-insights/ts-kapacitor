@@ -25,6 +25,7 @@ import subprocess
 import os
 import os.path
 import time
+import tempfile
 import sys
 import json
 import socket
@@ -33,10 +34,11 @@ from eis.config_manager import ConfigManager
 from util.util import Util
 from util.log import configure_logging
 
-TEMP_KAPACITOR_DIR = "/tmp/"
-KAPACITOR_CERT = TEMP_KAPACITOR_DIR + "kapacitor_server_certificate.pem"
-KAPACITOR_KEY = TEMP_KAPACITOR_DIR + "kapacitor_server_key.pem"
-KAPACITOR_CA = TEMP_KAPACITOR_DIR + "ca_certificate.pem"
+TEMP_KAPACITOR_DIR = tempfile.gettempdir()
+KAPACITOR_CERT = os.path.join(TEMP_KAPACITOR_DIR,
+                              "kapacitor_server_certificate.pem")
+KAPACITOR_KEY = os.path.join(TEMP_KAPACITOR_DIR, "kapacitor_server_key.pem")
+KAPACITOR_CA = os.path.join(TEMP_KAPACITOR_DIR, "ca_certificate.pem")
 KAPACITOR_DEV = "kapacitor_devmode.conf"
 KAPACITOR_PROD = "kapacitor.conf"
 SUCCESS = 0
