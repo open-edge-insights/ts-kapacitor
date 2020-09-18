@@ -1,19 +1,22 @@
 {
-    "influxdb": {
-        "username": "admin",
-        "password": "admin123"
+    "/Kapacitor/config": {
+        "influxdb": {
+            "username": "admin",
+            "password": "admin123"
+        },
+        "task": [{
+         "tick_script": "go_point_classifier.tick",
+             "task_name": "go_point_classifier",
+             "udfs": [{
+                 "type": "go",
+                 "name": "go_classifier"
+             }]
+           },
+           {
+         "tick_script": "rfc_task.tick",
+             "task_name": "random_forest_sample"
+           }
+        ]
     },
-    "task": [{
-	 "tick_script": "go_point_classifier.tick",
-         "task_name": "go_point_classifier",
-         "udfs": [{
-             "type": "go",
-             "name": "go_classifier"
-         }]
-       },
-       {
-	 "tick_script": "rfc_task.tick",
-         "task_name": "random_forest_sample"
-       }
-    ]
+    "/Kapacitor/interfaces": {}
 }
