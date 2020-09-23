@@ -1,5 +1,5 @@
 {
-    "/Kapacitor/config": {
+    "config": {
         "influxdb": {
             "username": "admin",
             "password": "admin123"
@@ -18,5 +18,5 @@
            }
         ]
     },
-    "/Kapacitor/interfaces": {}
+    "interfaces": {}
 }
