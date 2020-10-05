@@ -101,14 +101,11 @@ class KapacitorClassifier():
                                                              ]['password']
 
         if not dev_mode:
-            cert = client.GetConfig("/{0}/{1}".format(
-                app_name, "server_cert"))
+            cert = config["server_cert"]
             self.write_cert(KAPACITOR_CERT, cert)
-            key = client.GetConfig("/{0}/{1}".format(
-                app_name, "server_key"))
+            key = config["server_key"]
             self.write_cert(KAPACITOR_KEY, key)
-            ca_cert = client.GetConfig("/{0}/{1}".format(
-                app_name, "ca_cert"))
+            ca_cert = config["ca_cert"]
             self.write_cert(KAPACITOR_CA, ca_cert)
 
     def start_kapacitor(self,

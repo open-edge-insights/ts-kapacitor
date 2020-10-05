@@ -1,24 +1,27 @@
 {
-    "influxdb": {
-        "username": "admin",
-        "password": "admin123"
+    "config": {
+        "influxdb": {
+            "username": "admin",
+            "password": "admin123"
+        },
+        "task": [
+           {
+    	 "tick_script": "temperature_classifier.tick",
+             "task_name": "temp_classifier",
+             "udfs": [{
+                 "type": "go",
+                 "name": "temperature_classifier"
+             }]
+           },
+           {
+    	 "tick_script": "humidity_classifier.tick",
+             "task_name": "humidity_classifier",
+             "udfs": [{
+                 "type": "python",
+                 "name": "humidity_classifier"
+             }]
+           }
+        ]
     },
-    "task": [
-       {
-	 "tick_script": "temperature_classifier.tick",
-         "task_name": "temp_classifier",
-         "udfs": [{
-             "type": "go",
-             "name": "temperature_classifier"
-         }]
-       },
-       {
-	 "tick_script": "humidity_classifier.tick",
-         "task_name": "humidity_classifier",
-         "udfs": [{
-             "type": "python",
-             "name": "humidity_classifier"
-         }]
-       }
-    ]
+    "interfaces": {}
 }
