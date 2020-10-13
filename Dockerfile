@@ -40,7 +40,24 @@ RUN mkdir -p ${KAPACITOR_REPO} && \
     python3.6 build.py --clean -o ${GO_ROOT_BIN} && \
     apt-get remove -y python3.6
 
+FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
 
+FROM eisbase
+
+COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
+COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
+COPY --from=common ${GO_WORK_DIR}/common/cmake ${PY_WORK_DIR}/common/cmake
+COPY --from=common /usr/local/lib /usr/local/lib
+COPY --from=common /usr/local/include /usr/local/include
+
+# Added python3.7 to compile configmanager library. This is required as 'Python.h' header file is missing in Intel Distribution of python and hence need to build and copy ConfigMgr libs from python3.7.
+RUN apt-get update && apt-get install -y python3.7 python3.7-dev python3.7-distutils python3-pip
+RUN python3.7 -m pip install Cython
+RUN cd ${PY_WORK_DIR}/libs/ConfigMgr/python && \
+    python3.7 setup.py install && \
+    cd ../../../
+
+RUN apt-get remove -y python3.7 python3.7-dev python3.7-distutils python3-pip
 # Adding Intel distribution python
 ENV ACCEPT_INTEL_PYTHON_EULA=yes
 
@@ -77,17 +94,6 @@ RUN while read requirement; do conda install --yes $requirement; done < conda_re
     && cp -r ${PY_WORK_DIR}/miniconda/lib/python3.7/ /usr/local/lib/ \
     && cp -a ${PY_WORK_DIR}/miniconda/lib/. /usr/local/lib/
 
-FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
-
-FROM eisbase
-
-COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
-COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
-
-RUN cd ${PY_WORK_DIR}/libs/ConfigManager/python && \
-    python3.7 setup.py.in install && \
-    cd ../../../
-
 # Installing required python library
 RUN python3.7 -m pip install jsonschema==3.2.0
 COPY requirements.txt ./
@@ -96,7 +102,7 @@ RUN  python3.7 -m pip install -r requirements.txt
 # Adding classifier program
 COPY . ./
 
-ENV PYTHONPATH $PYTHONPATH:${KAPACITOR_REPO}/udf/agent/py/
+ENV PYTHONPATH $PYTHONPATH:${KAPACITOR_REPO}/udf/agent/py/:/usr/local/lib/python3.7/dist-packages/
 ENV GOCACHE "/tmp"
 
 COPY schema.json .

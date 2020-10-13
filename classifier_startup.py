@@ -30,7 +30,7 @@ import sys
 import json
 import socket
 from distutils.util import strtobool
-from eis.config_manager import ConfigManager
+import cfgmgr.config_manager as cfg
 from util.util import Util
 from util.log import configure_logging
 
@@ -89,27 +89,24 @@ class KapacitorClassifier():
             self.logger.debug("Failed creating file: {}, Error: {} ".format(
                 file_name, err))
 
-    def read_config(self, client, dev_mode, app_name):
+    def read_config(self, config, dev_mode, app_name):
         """Read the configuration from etcd
         """
-        configfile = client.GetConfig("/{0}/{1}".format(
-            app_name, CONFIG_KEY_PATH))
-        config = json.loads(configfile)
         os.environ['KAPACITOR_INFLUXDB_0_USERNAME'] = config['influxdb'
                                                              ]['username']
         os.environ['KAPACITOR_INFLUXDB_0_PASSWORD'] = config['influxdb'
                                                              ]['password']
 
         if not dev_mode:
-            cert = config["server_cert"]
-            self.write_cert(KAPACITOR_CERT, cert)
-            key = config["server_key"]
-            self.write_cert(KAPACITOR_KEY, key)
+            server_cert = config["server_cert"]
+            self.write_cert(KAPACITOR_CERT, server_cert)
+            server_key = config["server_key"]
+            self.write_cert(KAPACITOR_KEY, server_key)
             ca_cert = config["ca_cert"]
             self.write_cert(KAPACITOR_CA, ca_cert)
 
     def start_kapacitor(self,
-                        client,
+                        config,
                         host_name,
                         dev_mode,
                         app_name):
@@ -139,7 +136,7 @@ class KapacitorClassifier():
                 os.environ["KAPACITOR_INFLUXDB_0_URLS_0"] = "{}{}".format(
                     https_scheme, influxdb_hostname_port)
 
-            self.read_config(client, dev_mode, app_name)
+            self.read_config(config, dev_mode, app_name)
             subprocess.Popen(["kapacitord", "-hostname", host_name,
                               "-config", kapacitor_conf, "&"])
             self.logger.info("Started kapacitor Successfully...")
@@ -314,17 +311,17 @@ class KapacitorClassifier():
 def main():
     """Main to start kapacitor service
     """
-    dev_mode = bool(strtobool(os.environ["DEV_MODE"]))
-    # Initializing Etcd to set env variables
-    app_name = os.environ["AppName"]
-    conf = Util.get_crypto_dict(app_name)
-
-    cfg_mgr = ConfigManager()
-    config_client = cfg_mgr.get_config_client("etcd", conf)
-    app_name = os.environ["AppName"]
-    configfile = config_client.GetConfig("/{0}/{1}".format(app_name,
-                                                           CONFIG_KEY_PATH))
-    config = json.loads(configfile)
+    try:
+        ctx = cfg.ConfigMgr()
+        app_cfg = ctx.get_app_config()
+        config = app_cfg.get_dict()
+        app_name = ctx.get_app_name()
+        dev_mode = ctx.is_dev_mode()
+    except Exception as e:
+        logger = configure_logging(os.getenv('PY_LOG_LEVEL','info').upper(),
+                                   __name__, dev_mode)
+        logger.error("Fetching app configuration failed, Error: {}".format(e))
+        sys.exit(1)
 
     logger = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),
                                __name__, dev_mode)
@@ -343,7 +340,7 @@ def main():
         kapacitor_classifier.exit_with_failure_message(msg)
 
     kapacitor_started = False
-    if(kapacitor_classifier.start_kapacitor(config_client,
+    if(kapacitor_classifier.start_kapacitor(config,
                                             host_name,
                                             dev_mode,
                                             app_name) is True):
