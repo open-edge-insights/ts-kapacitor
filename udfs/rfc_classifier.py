@@ -175,7 +175,8 @@ class RfcHandler(Handler):
         self.predict_algo = d4p.decision_forest_classification_prediction(2)
         self.predict_result = self.predict_algo.compute(df, self.train_result.model)
         self.rfc_prediction_pred = self.predict_result.prediction
-        self.pred.append(self.rfc_prediction_pred)
+        self.rfc_prediction = self.rfc_prediction_pred[0, 0].item()
+        self.pred.append(self.rfc_prediction)
         self.assetId.append(jsonObj['NameOFLog'])
         self.batchTS.append(point.time)
 
@@ -192,8 +193,8 @@ class RfcHandler(Handler):
         :type batch_meta: udf_pb2.EndBatch
         """
         for i in range(len(self.assetId)):
-            self.response.point.fieldsString['assetId'] = self.assetId[i]
-            self.response.point.fieldsString['prediction'] = str(self.pred[i])
+            self.response.point.tags['assetId'] = self.assetId[i]
+            self.response.point.fieldsDouble['prediction'] = self.pred[i]
             self.response.point.time = self.batchTS[i]
             logging.info(self.response)
             self._agent.write_response(self.response)
