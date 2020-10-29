@@ -79,14 +79,6 @@ RUN conda clean --all \
     && apt-get autoremove -y \
     && rm Miniconda3-latest-Linux-x86_64.sh
 
-# Installing EIS related libs
-RUN git clone https://github.com/kragniz/python-etcd3 && \
-    cd python-etcd3 && \
-    git checkout -b ${PY_ETCD3_VERSION} ${PY_ETCD3_VERSION} && \
-    python3.7 setup.py install && \
-    cd .. && \
-    rm -rf python-etcd3
-
 # Installing external dependencies using conda
 COPY conda_requirements.txt ./
 RUN while read requirement; do conda install --yes $requirement; done < conda_requirements.txt \
