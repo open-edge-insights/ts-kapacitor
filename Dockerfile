@@ -22,8 +22,38 @@
 
 ARG EIS_VERSION
 ARG DOCKER_REGISTRY
-FROM ${DOCKER_REGISTRY}ia_eisbase:$EIS_VERSION as eisbase
+ARG INTELPYTHON_VERSION
+FROM intelpython/intelpython3_full:${INTELPYTHON_VERSION} as intelpython
 LABEL description="Kapacitor image"
+
+ARG HOST_TIME_ZONE
+ENV GO_WORK_DIR /EIS/go/src/IEdgeInsights
+ENV GOPATH="/EIS/go"
+ENV PATH ${PATH}:/usr/local/go/bin:${GOPATH}/bin
+
+WORKDIR ${GO_WORK_DIR}
+
+#Installing Go and dep package manager tool for Go
+ARG GO_VERSION
+RUN apt-get update && \
+    wget https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
+
+ARG DEBIAN_FRONTEND=noninteractive
+# Setting timezone inside the container
+RUN echo "$HOST_TIME_ZONE" >/etc/timezone && \
+    cat /etc/timezone && \
+    apt-get install -y tzdata && \ 
+    ln -sf /usr/share/zoneinfo/${HOST_TIME_ZONE} /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
+
+ENV GLOG_GO_PATH ${GOPATH}/src/github.com/golang/glog
+ENV GLOG_VER 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+RUN mkdir -p ${GLOG_GO_PATH} && \
+    git clone https://github.com/golang/glog ${GLOG_GO_PATH} && \
+    cd ${GLOG_GO_PATH} && \
+    git checkout -b ${GLOG_VER} ${GLOG_VER}
+
 
 ENV PY_WORK_DIR /EIS
 WORKDIR ${PY_WORK_DIR}
@@ -31,78 +61,44 @@ ENV HOME ${PY_WORK_DIR}
 ENV KAPACITOR_REPO ${PY_WORK_DIR}/go/src/github.com/influxdata/kapacitor
 ENV GO_ROOT_BIN ${PY_WORK_DIR}/go/bin
 
-# Adding kapacitor related files and removing python3.6
+# Installing Kapacitor from source
 ARG KAPACITOR_VERSION
 RUN mkdir -p ${KAPACITOR_REPO} && \
     git clone https://github.com/influxdata/kapacitor.git ${KAPACITOR_REPO} && \
     cd ${KAPACITOR_REPO} && \
     git checkout -b v${KAPACITOR_VERSION} tags/v${KAPACITOR_VERSION} && \
-    python3.6 build.py --clean -o ${GO_ROOT_BIN} && \
-    apt-get remove -y python3.6
+    python3.7 build.py --clean -o ${GO_ROOT_BIN}
 
 FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
+FROM intelpython
 
-FROM eisbase
+RUN apt-get update && apt-get install -y procps
 
 COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
 COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
-COPY --from=common ${GO_WORK_DIR}/common/cmake ${PY_WORK_DIR}/common/cmake
 COPY --from=common /usr/local/lib /usr/local/lib
 COPY --from=common /usr/local/include /usr/local/include
 
-# Added python3.7 to compile configmanager library. This is required as 'Python.h' header file is missing in Intel Distribution of python and hence need to build and copy ConfigMgr libs from python3.7.
-RUN apt-get update && apt-get install -y python3.7 python3.7-dev python3.7-distutils python3-pip
 RUN python3.7 -m pip install Cython
 RUN cd ${PY_WORK_DIR}/libs/ConfigMgr/python && \
     python3.7 setup.py install && \
     cd ../../../
 
-RUN apt-get remove -y python3.7 python3.7-dev python3.7-distutils python3-pip
-# Adding Intel distribution python
-ENV ACCEPT_INTEL_PYTHON_EULA=yes
-
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    chmod +x Miniconda3-latest-Linux-x86_64.sh && \
-    ./Miniconda3-latest-Linux-x86_64.sh -b -p ${PY_WORK_DIR}/miniconda
-
-ENV PATH $PATH:${PY_WORK_DIR}/miniconda/bin
-ARG INTELPYTHON_VERSION
-
-# Installing Intel distribution python and daal4py
-RUN conda clean --all \
-    && conda config --add channels intel \
-    && conda install -y intelpython3_core=$INTELPYTHON_VERSION python=3 \
-    && conda install -y -c intel -c conda-forge mpich daal numpy \
-    && conda install -y -c intel daal4py \
-    && apt-get update \
-    && apt-get install -y g++ \
-    && apt-get autoremove -y \
-    && rm Miniconda3-latest-Linux-x86_64.sh
-
-# Installing external dependencies using conda
-COPY conda_requirements.txt ./
-RUN while read requirement; do conda install --yes $requirement; done < conda_requirements.txt \
-    && cp ${PY_WORK_DIR}/miniconda/bin/python3.7 /usr/local/bin \
-    && cp -r ${PY_WORK_DIR}/miniconda/lib/python3.7/ /usr/local/lib/ \
-    && cp -a ${PY_WORK_DIR}/miniconda/lib/. /usr/local/lib/
-
 # Installing required python library
-RUN python3.7 -m pip install jsonschema==3.2.0
 COPY requirements.txt ./
 RUN  python3.7 -m pip install -r requirements.txt
 
 # Adding classifier program
 COPY . ./
 
-ENV PYTHONPATH $PYTHONPATH:${KAPACITOR_REPO}/udf/agent/py/:/usr/local/lib/python3.7/dist-packages/
+ENV PYTHONPATH $PYTHONPATH:${KAPACITOR_REPO}/udf/agent/py/:/opt/conda/lib/python3.7/
 ENV GOCACHE "/tmp"
-
-COPY schema.json .
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib/:/opt/conda/lib/libfabric/
 
 #Removing build dependencies
 RUN apt-get remove -y wget && \
     apt-get remove -y git && \
-    apt-get remove curl && \
-    rm -rf miniconda requirements.txt conda_requirements.txt
+    apt-get remove -y curl && \
+    rm -rf requirements.txt
 
 ENTRYPOINT ["python3.7", "./classifier_startup.py"]

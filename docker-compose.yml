@@ -32,6 +32,8 @@ services:
         EIS_VERSION: ${EIS_VERSION}
         KAPACITOR_VERSION: ${KAPACITOR_VERSION}
         INTELPYTHON_VERSION: ${INTELPYTHON_VERSION}
+        GO_VERSION: ${GO_VERSION}
+        HOST_TIME_ZONE: ${HOST_TIME_ZONE}
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
     image: ${DOCKER_REGISTRY}ia_kapacitor:${EIS_VERSION}
     container_name: ia_kapacitor
