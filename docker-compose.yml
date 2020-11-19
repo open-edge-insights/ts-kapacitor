@@ -42,6 +42,11 @@ services:
     read_only: true
     restart: unless-stopped
     ipc: "none"
+    security_opt:
+    - no-new-privileges
+    healthcheck:
+      test: ["CMD-SHELL", "exit", "0"]
+      interval: 5m    
     environment:
       AppName: "Kapacitor"
       DEV_MODE: ${DEV_MODE}
