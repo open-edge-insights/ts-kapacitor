@@ -48,6 +48,7 @@ services:
       no_proxy: ${eis_no_proxy},${ETCD_HOST}
       NO_PROXY: ${eis_no_proxy},${ETCD_HOST}
       ETCD_HOST: ${ETCD_HOST}
+      ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
       KAPACITOR_URL: http://127.0.0.1:$KAPACITOR_PORT/
       KAPACITOR_UNSAFE_SSL: "true"
       KAPACITOR_INFLUXDB_0_URLS_0: http://127.0.0.1:$INFLUXDB_PORT/
