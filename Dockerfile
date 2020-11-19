@@ -101,4 +101,6 @@ RUN apt-get remove -y wget && \
     apt-get remove -y curl && \
     rm -rf requirements.txt
 
+HEALTHCHECK NONE
+
 ENTRYPOINT ["python3.7", "./classifier_startup.py"]
