@@ -50,6 +50,7 @@ services:
     environment:
       AppName: "Kapacitor"
       DEV_MODE: ${DEV_MODE}
+      PROFILING_MODE: ${PROFILING_MODE}
       no_proxy: ${eis_no_proxy},${ETCD_HOST}
       NO_PROXY: ${eis_no_proxy},${ETCD_HOST}
       ETCD_HOST: ${ETCD_HOST}
