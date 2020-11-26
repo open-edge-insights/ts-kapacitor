@@ -7,8 +7,10 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 import daal4py as d4p
-
+import time
 import logging
+import os
+from distutils.util import strtobool
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s:%(name)s: %(message)s')
 logger = logging.getLogger()
@@ -22,6 +24,7 @@ class RfcHandler(Handler):
         self._agent = agent
         self._history = None
         self._batch = None
+        self.profiling_mode = bool(strtobool(os.environ["PROFILING_MODE"]))
         logging.info("Training started...")
         training = pd.read_csv('/EIS/training_data_sets/Log_rf.csv')
         training = training.sample(frac=1)
@@ -79,6 +82,9 @@ class RfcHandler(Handler):
         self.pred = []
         self.assetId = []
         self.batchTS = []
+        self.udf_entry = []
+        self.udf_exit = []
+        self.ts = []
 
     def point(self, point):
         """
@@ -87,6 +93,10 @@ class RfcHandler(Handler):
         :param point: the body of the point received
         :type point: udf_pb2.Point
         """
+        if self.profiling_mode:
+            ts1 = (time.time_ns() / 1e6)
+            self.udf_entry.append(ts1)
+            self.ts.append(point.fieldsDouble['ts'])
         self.response = udf_pb2.Response()
         jsonObj = json.loads(point.fieldsString['value'])
         df = pd.DataFrame(columns=['Message.Log.Name1',
@@ -177,6 +187,9 @@ class RfcHandler(Handler):
         self.rfc_prediction_pred = self.predict_result.prediction
         self.rfc_prediction = self.rfc_prediction_pred[0, 0].item()
         self.pred.append(self.rfc_prediction)
+        if self.profiling_mode:
+            ts2 = (time.time_ns() / 1e6)
+            self.udf_exit.append(ts2)
         self.assetId.append(jsonObj['NameOFLog'])
         self.batchTS.append(point.time)
 
@@ -196,6 +209,11 @@ class RfcHandler(Handler):
             self.response.point.tags['assetId'] = self.assetId[i]
             self.response.point.fieldsDouble['prediction'] = self.pred[i]
             self.response.point.time = self.batchTS[i]
+            if self.profiling_mode:
+                self.response.point.fieldsInt['ts_kapacitor_udf_entry'] = int(self.udf_entry[i])
+                self.response.point.fieldsInt['ts_kapacitor_udf_exit'] = int(self.udf_exit[i])
+                self.response.point.fieldsDouble['ts'] = self.ts[i]
+
             logging.info(self.response)
             self._agent.write_response(self.response)
 

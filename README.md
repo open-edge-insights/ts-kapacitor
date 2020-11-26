@@ -143,7 +143,7 @@ For more information on the supported input and output plugins please refer
 
   * Process based UDFs
 
-    1. rfc_classifier.py: Random Forest Classification algo sample.
+    1. rfc_classifier.py: Random Forest Classification algo sample. This UDF can be used as profiling udf as well.
 
 ## Steps to configure the UDFs in kapacitor.
 
