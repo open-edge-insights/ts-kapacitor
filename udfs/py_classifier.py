@@ -26,6 +26,7 @@ from kapacitor.udf import udf_pb2
 import signal
 import stat
 import logging
+import tempfile
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s:%(name)s: %(message)s')
 logger = logging.getLogger()
@@ -89,7 +90,8 @@ class Accepter(object):
 
 
 if __name__ == '__main__':
-    path = "/tmp/point_classifier"
+    tmp_dir = tempfile.gettempdir()
+    path = os.path.join(tmp_dir, "point_classifier")
     server = Server(path, Accepter())
     os.chmod(path, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP |
              stat.S_IROTH | stat.S_IXOTH)
