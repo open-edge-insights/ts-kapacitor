@@ -64,6 +64,9 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
     $ cd ../../build
     $ python3.6 eis_builder.py
     $ docker-compose build
+    $ cd provision/
+    $ sudo ./provision_eis.sh ../docker-compose.yml
+    $ cd ..
     $ docker-compose up -d
     ```
 
