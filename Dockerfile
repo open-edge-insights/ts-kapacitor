@@ -73,6 +73,8 @@ RUN mkdir -p ${KAPACITOR_REPO} && \
     rm -rf /tmp/eii_msgbus_integration.patch
 COPY ./kapacitor/services/  \
      ${KAPACITOR_REPO}/vendor/github.com/influxdata/influxdb/services/
+COPY ./kapacitor/eii_out.go  ${KAPACITOR_REPO}/
+COPY ./kapacitor/pipeline/eii_out.go ${KAPACITOR_REPO}/pipeline/
 
 FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
 FROM intelpython
