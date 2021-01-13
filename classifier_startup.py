@@ -318,7 +318,7 @@ def main():
         app_name = ctx.get_app_name()
         dev_mode = ctx.is_dev_mode()
     except Exception as e:
-        logger = configure_logging(os.getenv('PY_LOG_LEVEL','info').upper(),
+        logger = configure_logging(os.getenv('PY_LOG_LEVEL', 'info').upper(),
                                    __name__, dev_mode)
         logger.error("Fetching app configuration failed, Error: {}".format(e))
         sys.exit(1)
