@@ -96,9 +96,11 @@ ENV GOCACHE "/tmp"
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib/:/opt/conda/lib/libfabric/
 
 #Removing build dependencies
-RUN apt-get remove -y wget && \
-    apt-get remove -y git && \
-    apt-get remove -y curl && \
+RUN apt-get remove -y --auto-remove --purge curl \
+                                            git \
+                                            libmagic1 \
+                                            libcurl3-gnutls \
+                                            wget && \
     rm -rf requirements.txt
 
 HEALTHCHECK NONE
