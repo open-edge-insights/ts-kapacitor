@@ -92,11 +92,12 @@ class KapacitorClassifier():
     def read_config(self, config, dev_mode, app_name):
         """Read the configuration from etcd
         """
-        os.environ['KAPACITOR_INFLUXDB_0_USERNAME'] = config['influxdb'
-                                                             ]['username']
-        os.environ['KAPACITOR_INFLUXDB_0_PASSWORD'] = config['influxdb'
-                                                             ]['password']
-
+        if 'influxdb' in config:
+            os.environ['KAPACITOR_INFLUXDB_0_USERNAME'] = \
+                config['influxdb']['username']
+            os.environ['KAPACITOR_INFLUXDB_0_PASSWORD'] = \
+                config['influxdb']['password']
+    
         if not dev_mode:
             server_cert = config["server_cert"]
             self.write_cert(KAPACITOR_CERT, server_cert)

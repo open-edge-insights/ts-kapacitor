@@ -62,7 +62,7 @@ services:
       KAPACITOR_SERVER: '127.0.0.1'
       KAPACITOR_PORT: $KAPACITOR_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
-      CertType: "pem"
+      CertType: "pem,zmq"
     user: ${EIS_UID}
     volumes:
        - "vol_temp_kapacitor:/tmp/"

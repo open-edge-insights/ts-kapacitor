@@ -1,4 +1,4 @@
-# Copyright (c) 2020 Intel Corporation.
+# Copyright (c) 2021 Intel Corporation.
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -63,21 +63,37 @@ ENV GO_ROOT_BIN ${PY_WORK_DIR}/go/bin
 
 # Installing Kapacitor from source
 ARG KAPACITOR_VERSION
+COPY ./eii_msgbus_integration.patch /tmp/eii_msgbus_integration.patch
 RUN mkdir -p ${KAPACITOR_REPO} && \
     git clone https://github.com/influxdata/kapacitor.git ${KAPACITOR_REPO} && \
     cd ${KAPACITOR_REPO} && \
     git checkout -b v${KAPACITOR_VERSION} tags/v${KAPACITOR_VERSION} && \
-    python3.7 build.py --clean -o ${GO_ROOT_BIN}
+    cd .. && \
+    patch -p0 < /tmp/eii_msgbus_integration.patch && \
+    rm -rf /tmp/eii_msgbus_integration.patch
+COPY ./kapacitor/services/  \
+     ${KAPACITOR_REPO}/vendor/github.com/influxdata/influxdb/services/
 
 FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
 FROM intelpython
 
-RUN apt-get update && apt-get install -y procps
-
+RUN apt-get update && apt-get install -y procps pkg-config
 COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
 COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
 COPY --from=common /usr/local/lib /usr/local/lib
-COPY --from=common /usr/local/include /usr/local/include
+COPY --from=common /usr/local/include /usr/local/include 
+COPY --from=common ${GO_WORK_DIR}/../EISMessageBus ${GOPATH}/src/EISMessageBus
+COPY --from=common ${GO_WORK_DIR}/../ConfigMgr ${GOPATH}/src/ConfigMgr
+
+# Build kapacitor
+RUN cd ${KAPACITOR_REPO} && \
+    cp -pr ${GOPATH}/src/EISMessageBus ./vendor/ && \
+    cp -pr ${GOPATH}/src/ConfigMgr ./vendor/ && \
+    python3.7 build.py --clean -o ${GO_ROOT_BIN}
+
+# Add tick scripts and configs
+COPY ./tick_scripts/* /EIS/tick_scripts/
+COPY ./config/kapacitor*.conf /EIS/config/
 
 RUN python3.7 -m pip install Cython
 RUN cd ${PY_WORK_DIR}/libs/ConfigMgr/python && \
@@ -89,7 +105,9 @@ COPY requirements.txt ./
 RUN  python3.7 -m pip install -r requirements.txt
 
 # Adding classifier program
-COPY . ./
+COPY ./udfs/ /EIS/udfs/
+COPY ./training_data_sets/ /EIS/training_data_sets/
+COPY classifier_startup.py ./
 
 ENV PYTHONPATH $PYTHONPATH:${KAPACITOR_REPO}/udf/agent/py/:/opt/conda/lib/python3.7/
 ENV GOCACHE "/tmp"

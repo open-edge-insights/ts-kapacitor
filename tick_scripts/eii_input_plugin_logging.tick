@@ -1,0 +1,9 @@
+
+dbrp "eii"."autogen"
+
+var data0 = stream
+        |from()
+                .database('eii')
+                .retentionPolicy('autogen')
+        |log()
+		.prefix('EII_PREFIX')
