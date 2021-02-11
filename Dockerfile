@@ -23,15 +23,21 @@
 ARG EII_VERSION
 ARG DOCKER_REGISTRY
 ARG INTELPYTHON_VERSION
+ARG ARTIFACTS="/artifacts"
+FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
 FROM intelpython/intelpython3_full:${INTELPYTHON_VERSION} as intelpython
-LABEL description="Kapacitor image"
 
+
+FROM intelpython as builder
 ARG HOST_TIME_ZONE
-ENV GO_WORK_DIR /EII/go/src/IEdgeInsights
-ENV GOPATH="/EII/go"
+ENV GOPATH="/go"
 ENV PATH ${PATH}:/usr/local/go/bin:${GOPATH}/bin
 
-WORKDIR ${GO_WORK_DIR}
+WORKDIR /app
+ARG ARTIFACTS
+RUN mkdir $ARTIFACTS \
+          $ARTIFACTS/bin \
+          $ARTIFACTS/kapacitor
 
 #Installing Go and dep package manager tool for Go
 ARG GO_VERSION
@@ -47,19 +53,9 @@ RUN echo "$HOST_TIME_ZONE" >/etc/timezone && \
     ln -sf /usr/share/zoneinfo/${HOST_TIME_ZONE} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
-ENV GLOG_GO_PATH ${GOPATH}/src/github.com/golang/glog
-ENV GLOG_VER 23def4e6c14b4da8ac2ed8007337bc5eb5007998
-RUN mkdir -p ${GLOG_GO_PATH} && \
-    git clone https://github.com/golang/glog ${GLOG_GO_PATH} && \
-    cd ${GLOG_GO_PATH} && \
-    git checkout -b ${GLOG_VER} ${GLOG_VER}
 
-
-ENV PY_WORK_DIR /EII
-WORKDIR ${PY_WORK_DIR}
-ENV HOME ${PY_WORK_DIR}
-ENV KAPACITOR_REPO ${PY_WORK_DIR}/go/src/github.com/influxdata/kapacitor
-ENV GO_ROOT_BIN ${PY_WORK_DIR}/go/bin
+ENV HOME /app
+ENV KAPACITOR_REPO ${GOPATH}/src/github.com/influxdata/kapacitor
 
 # Installing Kapacitor from source
 ARG KAPACITOR_VERSION
@@ -76,54 +72,81 @@ COPY ./kapacitor/services/  \
 COPY ./kapacitor/eii_out.go  ${KAPACITOR_REPO}/
 COPY ./kapacitor/pipeline/eii_out.go ${KAPACITOR_REPO}/pipeline/
 
-FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
-FROM intelpython
+ARG CMAKE_INSTALL_PREFIX
+ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+COPY --from=common ${CMAKE_INSTALL_PREFIX}/include ${CMAKE_INSTALL_PREFIX}/include
+COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
+COPY --from=common ${GOPATH}/src ${GOPATH}/src/
+COPY --from=common /eii/common/util util
+COPY --from=common /eii/common/libs libs
+RUN apt-get update && apt-get install -y pkg-config
+ENV PATH="$PATH:/usr/local/go/bin" \
+    PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" \
+    LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib"
 
-RUN apt-get update && apt-get install -y procps pkg-config
-COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
-COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
-COPY --from=common /usr/local/lib /usr/local/lib
-COPY --from=common /usr/local/include /usr/local/include 
-COPY --from=common ${GO_WORK_DIR}/../EIIMessageBus ${GOPATH}/src/EIIMessageBus
-COPY --from=common ${GO_WORK_DIR}/../ConfigMgr ${GOPATH}/src/ConfigMgr
+# These flags are needed for enabling security while compiling and linking with cpuidcheck in golang
+ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIC" \
+    CGO_LDFLAGS="$CGO_LDFLAGS -L${CMAKE_INSTALL_PREFIX}/lib -z noexecstack -z relro -z now"
 
 # Build kapacitor
 RUN cd ${KAPACITOR_REPO} && \
     cp -pr ${GOPATH}/src/EIIMessageBus ./vendor/ && \
     cp -pr ${GOPATH}/src/ConfigMgr ./vendor/ && \
-    python3.7 build.py --clean -o ${GO_ROOT_BIN}
-
-# Add tick scripts and configs
-COPY ./tick_scripts/* /EII/tick_scripts/
-COPY ./config/kapacitor*.conf /EII/config/
+    python3.7 build.py --clean -o $ARTIFACTS/bin
 
 RUN python3.7 -m pip install Cython
-RUN cd ${PY_WORK_DIR}/libs/ConfigMgr/python && \
+RUN cd ./libs/ConfigMgr/python && \
     sed "s/\${CMAKE_CURRENT_SOURCE_DIR}/./g;s/\${CMAKE_CURRENT_BINARY_DIR}/./g" setup.py.in > setup.py && \
-    python3.7 setup.py install && \
+    python3.7 setup.py install --user && \
     cd ../../../
+
 
 # Installing required python library
 COPY requirements.txt ./
-RUN  python3.7 -m pip install -r requirements.txt
+RUN python3.7 -m pip install --user -r requirements.txt
 
 # Adding classifier program
-COPY ./udfs/ /EII/udfs/
-COPY ./training_data_sets/ /EII/training_data_sets/
-COPY classifier_startup.py ./
+COPY ./udfs/ $ARTIFACTS/kapacitor/udfs/
+COPY ./training_data_sets/ $ARTIFACTS/kapacitor/training_data_sets/
+COPY classifier_startup.py $ARTIFACTS/kapacitor
+# Add tick scripts and configs
+COPY ./tick_scripts/* $ARTIFACTS/kapacitor/tick_scripts/
+COPY ./config/kapacitor*.conf $ARTIFACTS/kapacitor/config/
 
-ENV PYTHONPATH $PYTHONPATH:${KAPACITOR_REPO}/udf/agent/py/:/opt/conda/lib/python3.7/
+FROM intelpython as runtime
+LABEL description="Kapacitor image"
+
+ARG EII_UID
+WORKDIR /EII
+ENV GOPATH="/go"
+ARG ARTIFACTS
+ARG CMAKE_INSTALL_PREFIX
+ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+
+COPY --from=builder /usr/local/go /usr/local
+COPY --from=builder $ARTIFACTS/bin/ /usr/local/bin
+COPY --from=builder $ARTIFACTS/kapacitor .
+COPY --from=builder /app/.local/lib .local/lib
+COPY --from=builder ${GOPATH}/src/github.com ${GOPATH}/src/github.com
+COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
+COPY --from=common /eii/common/util util
+COPY --from=common /root/.local/lib .local/lib
+COPY --from=common ${GOPATH}/src/github.com/golang/glog ${GOPATH}/src/github.com/golang/glog
+
+RUN chown -R ${EII_UID} .local/lib/python3.7
+
+ENV PYTHONPATH $PYTHONPATH:${GOPATH}/src/github.com/influxdata/kapacitor/udf/agent/py/:/opt/conda/lib/python3.7/:/EII/.local/lib/python3.7/site-packages/
 ENV GOCACHE "/tmp"
-ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib/:/opt/conda/lib/libfabric/
+ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib/:/opt/conda/lib/libfabric/:${CMAKE_INSTALL_PREFIX}/lib
 
+RUN apt-get update && apt-get install -y procps
 #Removing build dependencies
 RUN apt-get remove -y --auto-remove --purge curl \
                                             git \
                                             libmagic1 \
                                             libcurl3-gnutls \
-                                            wget && \
-    rm -rf requirements.txt
-
+                                            wget
+ENV PATH $PATH:/app/.local/bin
 HEALTHCHECK NONE
 
 ENTRYPOINT ["python3.7", "./classifier_startup.py"]

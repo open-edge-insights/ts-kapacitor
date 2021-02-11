@@ -35,6 +35,9 @@ services:
         GO_VERSION: ${GO_VERSION}
         HOST_TIME_ZONE: ${HOST_TIME_ZONE}
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
+        CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
+        UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
+        EII_UID: ${EII_UID}
     image: ${DOCKER_REGISTRY}ia_kapacitor:${EII_VERSION}
     container_name: ia_kapacitor
     hostname: ia_kapacitor

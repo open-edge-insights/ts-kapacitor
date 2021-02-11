@@ -225,7 +225,7 @@ For more information on the supported input and output plugins please refer
           args = ["-u", "/EII/udfs/customUDF"]
           timeout = "60s"
           [udf.functions.customUDF.env]
-             PYTHONPATH = "/EII/go/src/github.com/influxdata/kapacitor/udf/agent/py/"
+             PYTHONPATH = "/go/src/github.com/influxdata/kapacitor/udf/agent/py/"
        ```
 
   * Do the [provisioning](../README.md#provision) and run the EII stack.
