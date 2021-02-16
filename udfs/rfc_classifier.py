@@ -26,7 +26,7 @@ class RfcHandler(Handler):
         self._batch = None
         self.profiling_mode = bool(strtobool(os.environ["PROFILING_MODE"]))
         logging.info("Training started...")
-        training = pd.read_csv('/EIS/training_data_sets/Log_rf.csv')
+        training = pd.read_csv('/EII/training_data_sets/Log_rf.csv')
         training = training.sample(frac=1)
 
         y = training[['label']]

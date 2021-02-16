@@ -7,4 +7,4 @@ var data0 = stream
                 .retentionPolicy('autogen')
                 .measurement('point_data')
         |log()
-		.prefix('EIS_PREFIX')
+		.prefix('EII_PREFIX')

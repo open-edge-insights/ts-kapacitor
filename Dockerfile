@@ -20,15 +20,15 @@
 
 # Dockerfile for Point Data Analytics
 
-ARG EIS_VERSION
+ARG EII_VERSION
 ARG DOCKER_REGISTRY
 ARG INTELPYTHON_VERSION
 FROM intelpython/intelpython3_full:${INTELPYTHON_VERSION} as intelpython
 LABEL description="Kapacitor image"
 
 ARG HOST_TIME_ZONE
-ENV GO_WORK_DIR /EIS/go/src/IEdgeInsights
-ENV GOPATH="/EIS/go"
+ENV GO_WORK_DIR /EII/go/src/IEdgeInsights
+ENV GOPATH="/EII/go"
 ENV PATH ${PATH}:/usr/local/go/bin:${GOPATH}/bin
 
 WORKDIR ${GO_WORK_DIR}
@@ -55,7 +55,7 @@ RUN mkdir -p ${GLOG_GO_PATH} && \
     git checkout -b ${GLOG_VER} ${GLOG_VER}
 
 
-ENV PY_WORK_DIR /EIS
+ENV PY_WORK_DIR /EII
 WORKDIR ${PY_WORK_DIR}
 ENV HOME ${PY_WORK_DIR}
 ENV KAPACITOR_REPO ${PY_WORK_DIR}/go/src/github.com/influxdata/kapacitor
@@ -74,7 +74,7 @@ RUN mkdir -p ${KAPACITOR_REPO} && \
 COPY ./kapacitor/services/  \
      ${KAPACITOR_REPO}/vendor/github.com/influxdata/influxdb/services/
 
-FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
+FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
 FROM intelpython
 
 RUN apt-get update && apt-get install -y procps pkg-config
@@ -82,18 +82,18 @@ COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
 COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
 COPY --from=common /usr/local/lib /usr/local/lib
 COPY --from=common /usr/local/include /usr/local/include 
-COPY --from=common ${GO_WORK_DIR}/../EISMessageBus ${GOPATH}/src/EISMessageBus
+COPY --from=common ${GO_WORK_DIR}/../EIIMessageBus ${GOPATH}/src/EIIMessageBus
 COPY --from=common ${GO_WORK_DIR}/../ConfigMgr ${GOPATH}/src/ConfigMgr
 
 # Build kapacitor
 RUN cd ${KAPACITOR_REPO} && \
-    cp -pr ${GOPATH}/src/EISMessageBus ./vendor/ && \
+    cp -pr ${GOPATH}/src/EIIMessageBus ./vendor/ && \
     cp -pr ${GOPATH}/src/ConfigMgr ./vendor/ && \
     python3.7 build.py --clean -o ${GO_ROOT_BIN}
 
 # Add tick scripts and configs
-COPY ./tick_scripts/* /EIS/tick_scripts/
-COPY ./config/kapacitor*.conf /EIS/config/
+COPY ./tick_scripts/* /EII/tick_scripts/
+COPY ./config/kapacitor*.conf /EII/config/
 
 RUN python3.7 -m pip install Cython
 RUN cd ${PY_WORK_DIR}/libs/ConfigMgr/python && \
@@ -106,8 +106,8 @@ COPY requirements.txt ./
 RUN  python3.7 -m pip install -r requirements.txt
 
 # Adding classifier program
-COPY ./udfs/ /EIS/udfs/
-COPY ./training_data_sets/ /EIS/training_data_sets/
+COPY ./udfs/ /EII/udfs/
+COPY ./training_data_sets/ /EII/training_data_sets/
 COPY classifier_startup.py ./
 
 ENV PYTHONPATH $PYTHONPATH:${KAPACITOR_REPO}/udf/agent/py/:/opt/conda/lib/python3.7/

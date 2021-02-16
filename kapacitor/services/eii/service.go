@@ -12,9 +12,9 @@ import (
     "github.com/influxdata/influxdb/models"
     "github.com/influxdata/influxdb/services/meta"
     "github.com/influxdata/influxdb/tsdb"
-    eiscfgmgr "ConfigMgr/eisconfigmgr"
-    eismsgbus "EISMessageBus/eismsgbus"
-    "EISMessageBus/pkg/types"
+    eiicfgmgr "ConfigMgr/eiiconfigmgr"
+    eiimsgbus "EIIMessageBus/eiimsgbus"
+    "EIIMessageBus/pkg/types"
 )
 
 // statistics gathered by the eii service.
@@ -193,7 +193,7 @@ func (s *Service) Statistics(tags map[string]string) []models.Statistic {
 // and send the same to the message channel. The other thread 'writePoints()'
 // read from this channel and finally writes to the internal storage
 func (s *Service) serve() {
-    configmgr, err := eiscfgmgr.ConfigManager()
+    configmgr, err := eiicfgmgr.ConfigManager()
     if err != nil {
             s.Logger.Print("Fatal: Config Manager initialization failed...")
             return
@@ -201,7 +201,7 @@ func (s *Service) serve() {
     defer configmgr.Destroy()
 
     sub_count, _ := configmgr.GetNumSubscribers()
-    var subs  []*eismsgbus.Subscriber
+    var subs  []*eiimsgbus.Subscriber
 
     for sub_index := 0; sub_index < sub_count; sub_index++ {
         subctx, err := configmgr.GetSubscriberByIndex(sub_index)
@@ -231,7 +231,7 @@ func (s *Service) serve() {
         }
         s.Logger.Printf("Info: Subscriber# %v endpoints: %v", sub_index, endpoint)
 
-        client, err := eismsgbus.NewMsgbusClient(config)
+        client, err := eiimsgbus.NewMsgbusClient(config)
         if err != nil {
             s.Logger.Printf("Error: while initializing message bus context: %v", err)
             return

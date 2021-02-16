@@ -31,9 +31,9 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
 2. In case, if SI wants to use the IEdgeInsights only for Point Data Analytics,
    then comment Video use case containers ia_video_ingestion and ia_video_analytics in [build/docker-compose.yml](../build/docker-compose.yml)
 
-3. Starting the EIS.
-   To start the EIS in production mode, provisioning is required. For more information on provisioning
-   please refer the [README](../README.md#provision-eis).
+3. Starting the EII.
+   To start the EII in production mode, provisioning is required. For more information on provisioning
+   please refer the [README](../README.md#provision).
    After provisioning, please follow the below commands
    ```
    cd build
@@ -41,7 +41,7 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
    docker-compose up -d
    ```
 
-   To start the EIS in developer mode, please refer to the [README](../README.md#provision-eis).
+   To start the EII in developer mode, please refer to the [README](../README.md#provision).
 
 4. To verify the output please check the output of below command
    ```
@@ -211,24 +211,24 @@ For more information on the supported input and output plugins please refer
 
     4. In case of process based UDFs, provide the correct path of the code within the container
        in the [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
-       By default, the files and directories will be copied into the container under "/EIS" director. It is recommended to keep the custom UDFs
-       in the [udfs](udfs) directory, the path of the custom UDF will be "/EIS/udfs/customUDF_name" as shown in below example.
+       By default, the files and directories will be copied into the container under "/EII" director. It is recommended to keep the custom UDFs
+       in the [udfs](udfs) directory, the path of the custom UDF will be "/EII/udfs/customUDF_name" as shown in below example.
        If the UDF is kept in different path please modify the path in the args accordingly.
 
-       The PYTHONPATH of the Kapacitor agent directory is "/EIS/go/src/github.com/influxdata/kapacitor/udf/agent/py/". How to pass
+       The PYTHONPATH of the Kapacitor agent directory is "/EII/go/src/github.com/influxdata/kapacitor/udf/agent/py/". How to pass
        it is shown in the below example.
 
        For example
        ```
        [udf.functions.customUDF]
           prog = "python3.7"
-          args = ["-u", "/EIS/udfs/customUDF"]
+          args = ["-u", "/EII/udfs/customUDF"]
           timeout = "60s"
           [udf.functions.customUDF.env]
-             PYTHONPATH = "/EIS/go/src/github.com/influxdata/kapacitor/udf/agent/py/"
+             PYTHONPATH = "/EII/go/src/github.com/influxdata/kapacitor/udf/agent/py/"
        ```
 
-  * Do the [provisioning](../README.md#provision-eis) and run the EIS stack.
+  * Do the [provisioning](../README.md#provision) and run the EII stack.
 
 ## Step to run the samples of multiple UDFs in a single task and mulitple tasks using single UDF
 
