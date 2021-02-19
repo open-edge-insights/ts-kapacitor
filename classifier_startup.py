@@ -97,7 +97,7 @@ class KapacitorClassifier():
                 config['influxdb']['username']
             os.environ['KAPACITOR_INFLUXDB_0_PASSWORD'] = \
                 config['influxdb']['password']
-    
+
         if not dev_mode:
             server_cert = config["server_cert"]
             self.write_cert(KAPACITOR_CERT, server_cert)
