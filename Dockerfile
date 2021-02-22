@@ -97,6 +97,7 @@ COPY ./config/kapacitor*.conf /EIS/config/
 
 RUN python3.7 -m pip install Cython
 RUN cd ${PY_WORK_DIR}/libs/ConfigMgr/python && \
+    sed "s/\${CMAKE_CURRENT_SOURCE_DIR}/./g;s/\${CMAKE_CURRENT_BINARY_DIR}/./g" setup.py.in > setup.py && \
     python3.7 setup.py install && \
     cd ../../../
 
