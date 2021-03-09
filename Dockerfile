@@ -20,15 +20,15 @@
 
 # Dockerfile for Point Data Analytics
 
-ARG EIS_VERSION
+ARG EII_VERSION
 ARG DOCKER_REGISTRY
 ARG INTELPYTHON_VERSION
 FROM intelpython/intelpython3_full:${INTELPYTHON_VERSION} as intelpython
 LABEL description="Kapacitor image"
 
 ARG HOST_TIME_ZONE
-ENV GO_WORK_DIR /EIS/go/src/IEdgeInsights
-ENV GOPATH="/EIS/go"
+ENV GO_WORK_DIR /EII/go/src/IEdgeInsights
+ENV GOPATH="/EII/go"
 ENV PATH ${PATH}:/usr/local/go/bin:${GOPATH}/bin
 
 WORKDIR ${GO_WORK_DIR}
@@ -55,7 +55,7 @@ RUN mkdir -p ${GLOG_GO_PATH} && \
     git checkout -b ${GLOG_VER} ${GLOG_VER}
 
 
-ENV PY_WORK_DIR /EIS
+ENV PY_WORK_DIR /EII
 WORKDIR ${PY_WORK_DIR}
 ENV HOME ${PY_WORK_DIR}
 ENV KAPACITOR_REPO ${PY_WORK_DIR}/go/src/github.com/influxdata/kapacitor
@@ -69,7 +69,7 @@ RUN mkdir -p ${KAPACITOR_REPO} && \
     git checkout -b v${KAPACITOR_VERSION} tags/v${KAPACITOR_VERSION} && \
     python3.7 build.py --clean -o ${GO_ROOT_BIN}
 
-FROM ${DOCKER_REGISTRY}ia_common:$EIS_VERSION as common
+FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
 FROM intelpython
 
 RUN apt-get update && apt-get install -y procps

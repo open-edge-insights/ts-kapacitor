@@ -29,13 +29,13 @@ services:
       context: $PWD/../Kapacitor/
       dockerfile: $PWD/../Kapacitor/Dockerfile
       args:
-        EIS_VERSION: ${EIS_VERSION}
+        EII_VERSION: ${EII_VERSION}
         KAPACITOR_VERSION: ${KAPACITOR_VERSION}
         INTELPYTHON_VERSION: ${INTELPYTHON_VERSION}
         GO_VERSION: ${GO_VERSION}
         HOST_TIME_ZONE: ${HOST_TIME_ZONE}
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
-    image: ${DOCKER_REGISTRY}ia_kapacitor:${EIS_VERSION}
+    image: ${DOCKER_REGISTRY}ia_kapacitor:${EII_VERSION}
     container_name: ia_kapacitor
     hostname: ia_kapacitor
     network_mode: host
@@ -51,8 +51,8 @@ services:
       AppName: "Kapacitor"
       DEV_MODE: ${DEV_MODE}
       PROFILING_MODE: ${PROFILING_MODE}
-      no_proxy: ${eis_no_proxy},${ETCD_HOST}
-      NO_PROXY: ${eis_no_proxy},${ETCD_HOST}
+      no_proxy: ${eii_no_proxy},${ETCD_HOST}
+      NO_PROXY: ${eii_no_proxy},${ETCD_HOST}
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
       KAPACITOR_URL: http://127.0.0.1:$KAPACITOR_PORT/
@@ -63,7 +63,7 @@ services:
       KAPACITOR_PORT: $KAPACITOR_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
       CertType: "pem"
-    user: ${EIS_UID}
+    user: ${EII_UID}
     volumes:
        - "vol_temp_kapacitor:/tmp/"
     ports:

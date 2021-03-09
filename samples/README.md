@@ -10,7 +10,7 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
 
    Second TICK script is calling python UDF, it is filtering the data based on the condition “humidity > 25” and the data is written back to “humidity_classifier_results” measurement.
 
- * Samples directory contain 3 directories, kapacitor_config which is common to both the samples and the tick scripts and eis config for each sample is kept in respective directory.
+ * Samples directory contain 3 directories, kapacitor_config which is common to both the samples and the tick scripts and eii config for each sample is kept in respective directory.
  
 ## Steps to run the samples
 
@@ -19,17 +19,17 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
   * [config](../config) directory.
   * [config.json](../config.json) file.
 
-  2. Copy the sample [kapacitor prod mode config](kapacitor_config/kapacitor.conf) or [kapacitor dev mode config](kapacitor_config/kapacitor_devmode.conf) files based on prod or dev mode configuration of EIS in the [config](../config) directory.
+  2. Copy the sample [kapacitor prod mode config](kapacitor_config/kapacitor.conf) or [kapacitor dev mode config](kapacitor_config/kapacitor_devmode.conf) files based on prod or dev mode configuration of EII in the [config](../config) directory.
 
      ```
      $ cp kapacitor_config/kapacitor.conf kapacitor_config/kapacitor_devmode.conf ../config/
      ```
   3. To run the multiple UDFs in a single task sample
     
-  * Copy the [eis_config](multi_udfs_single_task/eis_config/config.json) file and replace the [config.json](../config.json) file.
+  * Copy the [eii_config](multi_udfs_single_task/eii_config/config.json) file and replace the [config.json](../config.json) file.
 
     ```
-    $ cp multi_udfs_single_task/eis_config/config.json ../config.json
+    $ cp multi_udfs_single_task/eii_config/config.json ../config.json
     ```
     
   * Copy the [point_classifier.tick](multi_udfs_single_task/tick_scripts/point_classifier.tick) and paste it in the [tick_scripts](../tick_scripts) directory.
@@ -40,10 +40,10 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
 
   4. To run the multiple tasks with single UDF
 
-  * Copy the [eis_config](single_udf_multi_tasks/eis_config/config.json) file and replace the [config.json](../config.json) file.
+  * Copy the [eii_config](single_udf_multi_tasks/eii_config/config.json) file and replace the [config.json](../config.json) file.
 
     ```
-    $ cp single_udf_multi_tasks/eis_config/config.json ../config.json
+    $ cp single_udf_multi_tasks/eii_config/config.json ../config.json
     ```
 
   * Copy the [humidity_classifier.tick](single_udf_multi_tasks/tick_scripts/humidity_classifier.tick) and [temperature_classifier.tick](single_udf_multi_tasks/tick_scripts/temperature_classifier.tick) and paste it in the [tick_scripts](../tick_scripts) directory.
@@ -54,23 +54,23 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
     $ cp single_udf_multi_tasks/tick_scripts/temperature_classifier.tick ../tick_scripts/
     ```
 
-  5. Starting the EIS stack.
+  5. Starting the EII stack.
 
-  * To start the EIS in production mode, provisioning is required. For more information on provisioning
-    please refer the [README](../../README.md#provision-eis).
+  * To start the EII in production mode, provisioning is required. For more information on provisioning
+    please refer the [README](../../README.md#provision).
     After provisioning, please follow the below commands
    
     ```
     $ cd ../../build
-    $ python3.6 eis_builder.py
+    $ python3.6 builder.py
     $ docker-compose build
     $ cd provision/
-    $ sudo ./provision_eis.sh ../docker-compose.yml
+    $ sudo ./provision.sh ../docker-compose.yml
     $ cd ..
     $ docker-compose up -d
     ```
 
-    To start the EIS in developer mode, please refer to the [README](../README.md#provision-eis).
+    To start the EII in developer mode, please refer to the [README](../README.md#provision).
 
   6. To start the mqtt-publisher with temperature and humidity data, please refer [tools/mqtt-publisher/README.md](../tools/mqtt-publisher/README.md)
 
