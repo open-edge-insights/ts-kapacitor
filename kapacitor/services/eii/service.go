@@ -266,10 +266,12 @@ func (s *Service) serve() {
             case err := <-sub.ErrorChannel:
                 atomic.AddInt64(&s.stats.ReadFail, 1)
                 s.Logger.Printf("Error: while receiving message: %v", err)
+            default:
             }
         }
-
-        time.Sleep(1 * time.Second)
+        // TDDO: Need to remove this delay and move the message handling into 
+        // individual threads
+        time.Sleep(50 * time.Millisecond)
     }
 }
 

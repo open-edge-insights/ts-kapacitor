@@ -106,21 +106,36 @@ func (h *EiiOutNode) DeleteGroup(d edge.DeleteGroupMessage) (error) {
 }
 
 func (h *EiiOutNode) Done() {
-    h.publisher.Close()
-    h.client.Close()
+    if h.publisher != nil  {
+        h.publisher.Close()
+    }
+    if h.client != nil {
+        h.client.Close()
+    }
 }
 
 // Write a batch of data to HouseDB
 func (h *EiiOutNode) write(batch edge.BufferedBatchMessage) error {
     // Implement writing to HouseDB here...
     point := batch.Points()[0]
-
+    var ivalue interface{}
+    var cvalue interface{}
     fields := make(map[string]interface{})
     for key, value  := range  point.Fields(){
-        fields[key] = value.(interface{})
+        ivalue = value
+        switch ivalue.(type) {
+        case int64:
+            val := int(ivalue.(int64))
+            cvalue = val
+        default:
+            cvalue = ivalue
+        }
+        fields[key] = cvalue
     }
 
-    h.publisher.Publish(fields)
+    if h.publisher != nil {
+        h.publisher.Publish(fields)
+    }
     return nil
 }
 
