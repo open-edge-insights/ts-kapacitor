@@ -47,8 +47,12 @@ type Service struct {
     PointsWriter pointsWriter
     Logger       *log.Logger
     wg          sync.WaitGroup
+    // Waitgroup for handleSubscriber() thread
+    wgs         sync.WaitGroup
     batcher     *tsdb.PointBatcher
     mu          sync.RWMutex
+    // Mutex to synchronize handleSubscriber() thread
+    mus         sync.RWMutex
     ready       bool          // Has the required databse/storage been created?
     done        chan struct{} // Is the service closing or closed?
 
@@ -189,6 +193,26 @@ func (s *Service) Statistics(tags map[string]string) []models.Statistic {
 }
 
 
+// GoRoutine responsible for listening for data on message channel for a subscriber 
+// and proces it
+func handleSubscriber(sub *eiimsgbus.Subscriber, service *Service) {
+    for {
+        select {
+        case <-service.done:
+            // We closed the connection, time to go.
+            return
+        case msg := <-sub.MessageChannel:
+            service.handleMessage(msg)
+        case err := <-sub.ErrorChannel:
+            service.mus.Lock()
+            atomic.AddInt64(&service.stats.ReadFail, 1)
+            service.Logger.Printf("Error: while receiving message: %v", err)
+            service.mus.Unlock()
+        }
+    }
+}
+
+
 // The thread function which is responsible for listening to publisher messages
 // and send the same to the message channel. The other thread 'writePoints()'
 // read from this channel and finally writes to the internal storage
@@ -201,7 +225,6 @@ func (s *Service) serve() {
     defer configmgr.Destroy()
 
     sub_count, _ := configmgr.GetNumSubscribers()
-    var subs  []*eiimsgbus.Subscriber
 
     for sub_index := 0; sub_index < sub_count; sub_index++ {
         subctx, err := configmgr.GetSubscriberByIndex(sub_index)
@@ -245,35 +268,23 @@ func (s *Service) serve() {
                 return
             }
             defer subscriber.Close()
-            subs = append(subs, subscriber)
+            // Process subscriber channel on a new go routine
+            s.wgs.Add(1)
+            go func() {defer s.wgs.Done(); handleSubscriber(subscriber, s)}()
         }
     }
 
-
+    // Wait till service is closed. Go routines willl be running
+    // as long as service is running.
     for {
         select {
         case <-s.done:
             // We closed the connection, time to go.
             return
-        default:
-            // Keep processing.
         }
-
-        for _, sub := range subs {
-            select {
-            case msg := <-sub.MessageChannel:
-                s.handleMessage(msg)
-            case err := <-sub.ErrorChannel:
-                atomic.AddInt64(&s.stats.ReadFail, 1)
-                s.Logger.Printf("Error: while receiving message: %v", err)
-            default:
-            }
-        }
-        // TDDO: Need to remove this delay and move the message handling into 
-        // individual threads
-        time.Sleep(50 * time.Millisecond)
     }
 }
+
 
 // Convert the received publisher data into Points data which can be wriiten
 // to the Kapacitor internal storage
@@ -283,7 +294,7 @@ func (s *Service) convertMsgToPoints(msg *types.MsgEnvelope) models.Point {
     timestamp :=  time.Now()
 
     point, err := models.NewPoint(msg.Name, models.NewTags(tags), msg.Data, timestamp)
-    if err != nil {
+    if (err != nil || point == nil) {
         // Drop invalid points
         s.Logger.Printf("Warning: Dropping point %v: %v", msg.Name, err)
         atomic.AddInt64(&s.stats.InvalidDroppedPoints, 1)
@@ -293,12 +304,17 @@ func (s *Service) convertMsgToPoints(msg *types.MsgEnvelope) models.Point {
     return point
 }
 
-
+// Process the message and send the data to batcher
 func (s *Service) handleMessage(msg *types.MsgEnvelope) {
+    s.mus.Lock()
+    defer s.mus.Unlock()
     point := s.convertMsgToPoints(msg)
-    s.batcher.In() <- point
-    atomic.AddInt64(&s.stats.PointsReceived, 1)
+    if point != nil {
+        s.batcher.In() <- point
+        atomic.AddInt64(&s.stats.PointsReceived, 1)
+    }
 }
+
 
 // The thread responsible for reading Points data from message channel and writing the same 
 // to the kapacitor internal storage
