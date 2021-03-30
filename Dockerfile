@@ -22,16 +22,21 @@
 
 ARG EII_VERSION
 ARG DOCKER_REGISTRY
-ARG INTELPYTHON_VERSION
 ARG ARTIFACTS="/artifacts"
+ARG UBUNTU_IMAGE_VERSION
 FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
-FROM intelpython/intelpython3_full:${INTELPYTHON_VERSION} as intelpython
+FROM ubuntu:$UBUNTU_IMAGE_VERSION as base
 
-
-FROM intelpython as builder
+FROM base as builder
 ARG HOST_TIME_ZONE
 ENV GOPATH="/go"
-ENV PATH ${PATH}:/usr/local/go/bin:${GOPATH}/bin
+ENV PATH ${PATH}:/usr/local/go/bin:${GOPATH}/bin:/opt/conda/bin
+
+# Installing build related packages
+RUN apt-get update && \
+    apt-get install -y git \
+                       g++ \
+                       wget
 
 WORKDIR /app
 ARG ARTIFACTS
@@ -88,32 +93,45 @@ ENV PATH="$PATH:/usr/local/go/bin" \
 ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIC" \
     CGO_LDFLAGS="$CGO_LDFLAGS -L${CMAKE_INSTALL_PREFIX}/lib -z noexecstack -z relro -z now"
 
-# Build kapacitor
-RUN cd ${KAPACITOR_REPO} && \
-    cp -pr ${GOPATH}/src/EIIMessageBus ./vendor/ && \
-    cp -pr ${GOPATH}/src/ConfigMgr ./vendor/ && \
-    python3.7 build.py --clean -o $ARTIFACTS/bin
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    chmod +x Miniconda3-latest-Linux-x86_64.sh && \
+    ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda && \
+    rm Miniconda3-latest-Linux-x86_64.sh
 
-RUN python3.7 -m pip install Cython
-RUN cd ./libs/ConfigMgr/python && \
-    sed "s/\${CMAKE_CURRENT_SOURCE_DIR}/./g;s/\${CMAKE_CURRENT_BINARY_DIR}/./g" setup.py.in > setup.py && \
-    python3.7 setup.py install --user && \
-    cd ../../../
-
+ARG INTELPYTHON_VERSION
+RUN conda update conda -y && \
+    conda config --add channels intel && \
+    conda create -y -n idp intelpython3_core=${INTELPYTHON_VERSION} python=3.7 && \
+    conda install -y -n idp daal4py
 
 # Installing required python library
 COPY requirements.txt ./
-RUN python3.7 -m pip install --user -r requirements.txt
+RUN /bin/bash -c "source activate idp && \
+    python3.7 -m pip install --user -r requirements.txt"
+
+# Build kapacitor
+RUN /bin/bash -c "source activate idp && \
+    cd ${KAPACITOR_REPO} && \
+    cp -pr ${GOPATH}/src/EIIMessageBus ./vendor/ && \
+    cp -pr ${GOPATH}/src/ConfigMgr ./vendor/ && \
+    python3.7 build.py --clean -o $ARTIFACTS/bin"
+
+RUN cd ./libs/ConfigMgr/python && \
+    sed "s/\${CMAKE_CURRENT_SOURCE_DIR}/./g;s/\${CMAKE_CURRENT_BINARY_DIR}/./g" setup.py.in > setup.py && \
+    /bin/bash -c "source activate idp && \
+    python3.7 setup.py install --user && \
+    cd ../../../"
 
 # Adding classifier program
 COPY ./udfs/ $ARTIFACTS/kapacitor/udfs/
 COPY ./training_data_sets/ $ARTIFACTS/kapacitor/training_data_sets/
 COPY classifier_startup.py $ARTIFACTS/kapacitor
+COPY classifier_startup.sh $ARTIFACTS/kapacitor
 # Add tick scripts and configs
 COPY ./tick_scripts/* $ARTIFACTS/kapacitor/tick_scripts/
 COPY ./config/kapacitor*.conf $ARTIFACTS/kapacitor/config/
 
-FROM intelpython as runtime
+FROM base as runtime
 LABEL description="Kapacitor image"
 
 ARG EII_UID
@@ -127,6 +145,7 @@ COPY --from=builder /usr/local/go /usr/local
 COPY --from=builder $ARTIFACTS/bin/ /usr/local/bin
 COPY --from=builder $ARTIFACTS/kapacitor .
 COPY --from=builder /app/.local/lib .local/lib
+COPY --from=builder /opt/conda /opt/conda
 COPY --from=builder ${GOPATH}/src/github.com ${GOPATH}/src/github.com
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
 COPY --from=common /eii/common/util util
@@ -134,19 +153,12 @@ COPY --from=common /root/.local/lib .local/lib
 COPY --from=common ${GOPATH}/src/github.com/golang/glog ${GOPATH}/src/github.com/golang/glog
 
 RUN chown -R ${EII_UID} .local/lib/python3.7
-
+RUN chmod +x ./classifier_startup.sh
 ENV PYTHONPATH $PYTHONPATH:${GOPATH}/src/github.com/influxdata/kapacitor/udf/agent/py/:/opt/conda/lib/python3.7/:/EII/.local/lib/python3.7/site-packages/
 ENV GOCACHE "/tmp"
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib/:/opt/conda/lib/libfabric/:${CMAKE_INSTALL_PREFIX}/lib
-
-RUN apt-get update && apt-get install -y procps
-#Removing build dependencies
-RUN apt-get remove -y --auto-remove --purge curl \
-                                            git \
-                                            libmagic1 \
-                                            libcurl3-gnutls \
-                                            wget
-ENV PATH $PATH:/app/.local/bin
+RUN echo "source activate idp" >> /etc/bash.bashrc
+ENV PATH $PATH:/app/.local/bin:/opt/conda/bin
 HEALTHCHECK NONE
 
-ENTRYPOINT ["python3.7", "./classifier_startup.py"]
+ENTRYPOINT ["./classifier_startup.sh"]
