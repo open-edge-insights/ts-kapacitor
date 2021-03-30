@@ -22,16 +22,20 @@
 
 ARG EII_VERSION
 ARG DOCKER_REGISTRY
-ARG INTELPYTHON_VERSION
-FROM intelpython/intelpython3_full:${INTELPYTHON_VERSION} as intelpython
+ARG UBUNTU_IMAGE_VERSION
+FROM ubuntu:$UBUNTU_IMAGE_VERSION as base
 LABEL description="Kapacitor image"
 
+FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
+FROM base
 ARG HOST_TIME_ZONE
 ENV GO_WORK_DIR /EII/go/src/IEdgeInsights
 ENV GOPATH="/EII/go"
-ENV PATH ${PATH}:/usr/local/go/bin:${GOPATH}/bin
+ENV PATH ${PATH}:/usr/local/go/bin:${GOPATH}/bin:/opt/conda/bin
 
 WORKDIR ${GO_WORK_DIR}
+# Installing build related packages
+RUN apt-get update && apt-get install -y wget git g++
 
 #Installing Go and dep package manager tool for Go
 ARG GO_VERSION
@@ -61,40 +65,48 @@ ENV HOME ${PY_WORK_DIR}
 ENV KAPACITOR_REPO ${PY_WORK_DIR}/go/src/github.com/influxdata/kapacitor
 ENV GO_ROOT_BIN ${PY_WORK_DIR}/go/bin
 
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    chmod +x Miniconda3-latest-Linux-x86_64.sh && \
+    ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda && \
+    rm Miniconda3-latest-Linux-x86_64.sh
+
+ARG INTELPYTHON_VERSION
+RUN conda update conda -y && \
+    conda config --add channels intel && \
+    conda create -y -n idp intelpython3_core=${INTELPYTHON_VERSION} python=3.7 && \
+    conda install -y -n idp daal4py
+
+# Installing required python library
+COPY requirements.txt ./
+RUN /bin/bash -c "source activate idp && \
+    python3.7 -m pip install -r requirements.txt"
+
 # Installing Kapacitor from source
 ARG KAPACITOR_VERSION
 RUN mkdir -p ${KAPACITOR_REPO} && \
     git clone https://github.com/influxdata/kapacitor.git ${KAPACITOR_REPO} && \
+    /bin/bash -c "source activate idp && \
     cd ${KAPACITOR_REPO} && \
     git checkout -b v${KAPACITOR_VERSION} tags/v${KAPACITOR_VERSION} && \
-    python3.7 build.py --clean -o ${GO_ROOT_BIN}
-
-FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
-FROM intelpython
-
-RUN apt-get update && apt-get install -y procps
+    python3.7 build.py --clean -o ${GO_ROOT_BIN}"
 
 COPY --from=common ${GO_WORK_DIR}/common/libs ${PY_WORK_DIR}/libs
 COPY --from=common ${GO_WORK_DIR}/common/util ${PY_WORK_DIR}/util
 COPY --from=common /usr/local/lib /usr/local/lib
 COPY --from=common /usr/local/include /usr/local/include
 
-RUN python3.7 -m pip install Cython
 RUN cd ${PY_WORK_DIR}/libs/ConfigMgr/python && \
+    /bin/bash -c "source activate idp && \
     python3.7 setup.py install && \
-    cd ../../../
-
-# Installing required python library
-COPY requirements.txt ./
-RUN  python3.7 -m pip install -r requirements.txt
+    cd ../../../"
 
 # Adding classifier program
 COPY . ./
-
+RUN chmod +x ./classifier_startup.sh
 ENV PYTHONPATH $PYTHONPATH:${KAPACITOR_REPO}/udf/agent/py/:/opt/conda/lib/python3.7/
 ENV GOCACHE "/tmp"
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib/:/opt/conda/lib/libfabric/
-
+RUN echo "source activate idp" >> /etc/bash.bashrc
 #Removing build dependencies
 RUN apt-get remove -y --auto-remove --purge curl \
                                             git \
@@ -105,4 +117,4 @@ RUN apt-get remove -y --auto-remove --purge curl \
 
 HEALTHCHECK NONE
 
-ENTRYPOINT ["python3.7", "./classifier_startup.py"]
+ENTRYPOINT ["./classifier_startup.sh"]
