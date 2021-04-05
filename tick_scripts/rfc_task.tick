@@ -6,13 +6,14 @@ var data0 = stream
                 .retentionPolicy('autogen')
                 .measurement('ts_data')
         |window()
-	.period(3s)
-        .every(3s)
+	.period(1s)
+        .every(1s)
 
 data0
 
         @rfc()
         |influxDBOut()
+                .buffer(0)
                 .database('datain')
                 .measurement('rfc_results')
                 .retentionPolicy('autogen')
