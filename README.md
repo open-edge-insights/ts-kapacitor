@@ -233,3 +233,154 @@ For more information on the supported input and output plugins please refer
 ## Step to run the samples of multiple UDFs in a single task and mulitple tasks using single UDF
 
   * please refer to the [samples/README](samples/README.md)
+
+# Kapacitor input and output plugins
+
+## Purpose of plugins
+
+  The plugins allow Kapacitor to interact directly with EII message bus. They use message bus publisher/subscriber
+  interface. Using these plugins Kapacitor can now receive data from various EII publishers and send data 
+  to various EII subscribers.
+  Hence, it's possible to have a time-series use case without InfluxDB and Kapacitor can act as
+  an independent analytical engine.
+
+  A simple use case flow can be:
+
+        MQTT-temp-sensor-->Telegraf-->Kapacitor-->TimeseriesProfiler
+
+## Using input plugin
+
+  * Configure the EII input plugin in [config/kapacitor.conf](config/kapacitor.conf) and [config/kapacitor_devmode.conf](config/kapacitor_devmode.conf)
+    For example:
+    ```
+    [eii]
+      enabled = true
+    ```
+  * Edit [config.json](config.json) to add a subscriber under interfaces.
+
+    For example, to receive data published by Telegraf:
+    ```
+
+        "Subscribers": [
+            {
+                "Name": "telegraf_sub",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65077",
+                "PublisherAppName": "Telegraf",
+                "Topics": [
+                    "*"
+                ]
+            }
+        ]
+    ```
+    The received data will be available in the 'eii' storage for the tick scripts to use.
+  * Create/modify a tick script to process the data and configure the same in [config.json](config.json).
+    For example, use the stock [tick_scripts/eii_input_plugin_logging.tick](tick_scripts/eii_input_plugin_logging.tick) which logs the data received from 'eii'
+    storage onto the kapacitor log file (residing in the container at /tmp/log/kapacitor/kapacitor.log).
+    ```
+        "task": [
+           {
+             "tick_script": "eii_input_plugin_logging.tick",
+             "task_name": "eii_input_plugin_logging"
+           }
+        ]
+    ```
+  * Do the [provisioning](../README.md#provision) and run the EII stack.
+
+    The subscribed data will now be available in the above logs file which can be viewed with the 
+    command below:
+    ```
+    docker exec ia_kapacitor tail -f /tmp/log/kapacitor/kapacitor.log
+    ```
+
+## Using output plugin
+  * Create/modify a tick script to use 'eiiOut' node to send the data using publisher interface
+    For example, you may modify the profiling UDF as below:
+    ```
+    dbrp "eii"."autogen"
+
+    var data0 = stream
+        |from()
+                .database('eii')
+                .retentionPolicy('autogen')
+                .measurement('point_data')
+        @profiling_udf()
+        |eiiOut()
+                .pubname('sample_publisher')
+                .topic('sample_topic')
+
+    ```
+  * Add a publisher interface added to [config.json](config.json) with the same publisher name and topic 
+    i.e. 'sample_publisher' and 'sample_topic' respectively as in the above example.
+    For example:
+    ```
+        "Publishers": [
+            {
+                "Name": "sample_publisher",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65034",
+                "Topics": [
+                    "sample_topic"
+                ],
+                "AllowedClients": [
+                    "TimeSeriesProfiler"
+                ]
+            }
+        ]
+
+    ```
+  * Do the [provisioning](../README.md#provision) and run the EII stack.
+
+## Using output plugin with RFC udf
+  * Add the RFC task to [config.json](config.json):
+    ```
+        "task": [
+           {
+             "tick_script": "rfc_task.tick",
+             "task_name": "random_forest_sample",
+             "udfs": [{
+                 "type": "python",
+                 "name": "rfc_classifier"
+             }]
+           }
+        ]
+    ```
+  * Modify the [rfc_task.tick](tick_scripts/rfc_task.tick) as below, for example:
+    ```
+    dbrp "datain"."autogen"
+
+    var data0 = stream
+            |from()
+                    .database('datain')
+                    .retentionPolicy('autogen')
+                    .measurement('ts_data')
+            |window()
+            .period(3s)
+            .every(4s)
+
+    data0
+            @rfc()
+            |eiiOut()
+                    .pubname('sample_publisher')
+                    .topic('sample_topic')
+    ```
+  * Add a publisher interface added to [config.json](config.json) with the same publisher name and topic 
+    i.e. 'sample_publisher' and 'sample_topic' respectively as in the above example.
+    For example:
+    ```
+        "Publishers": [
+            {
+                "Name": "sample_publisher",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65034",
+                "Topics": [
+                    "sample_topic"
+                ],
+                "AllowedClients": [
+                    "TimeSeriesProfiler"
+                ]
+            }
+        ]
+
+    ```
+  * Do the [provisioning](../README.md#provision) and run the EII stack.
