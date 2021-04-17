@@ -331,7 +331,7 @@ For more information on the supported input and output plugins please refer
     ```
   * Do the [provisioning](../README.md#provision) and run the EII stack.
 
-## Using output plugin with RFC udf
+## Using input/output plugin with RFC udf
   * Add the RFC task to [config.json](config.json):
     ```
         "task": [
@@ -347,11 +347,11 @@ For more information on the supported input and output plugins please refer
     ```
   * Modify the [rfc_task.tick](tick_scripts/rfc_task.tick) as below, for example:
     ```
-    dbrp "datain"."autogen"
+    dbrp "eii"."autogen"
 
     var data0 = stream
             |from()
-                    .database('datain')
+                    .database('eii')
                     .retentionPolicy('autogen')
                     .measurement('ts_data')
             |window()
@@ -377,7 +377,9 @@ For more information on the supported input and output plugins please refer
                     "sample_topic"
                 ],
                 "AllowedClients": [
-                    "TimeSeriesProfiler"
+                    "TimeSeriesProfiler",
+                    "EmbSubscriber",
+                    "GoSubscriber"
                 ]
             }
         ]
