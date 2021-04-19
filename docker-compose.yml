@@ -38,6 +38,7 @@ services:
         CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
         UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
         EII_UID: ${EII_UID}
+        EII_USER_NAME: ${EII_USER_NAME}
     image: ${DOCKER_REGISTRY}ia_kapacitor:${EII_VERSION}
     container_name: ia_kapacitor
     hostname: ia_kapacitor
@@ -66,7 +67,6 @@ services:
       KAPACITOR_PORT: $KAPACITOR_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
       CertType: "pem,zmq"
-    user: ${EII_UID}
     volumes:
        - "vol_temp_kapacitor:/tmp/"
     ports:

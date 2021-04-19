@@ -135,6 +135,10 @@ FROM base as runtime
 LABEL description="Kapacitor image"
 
 ARG EII_UID
+ARG EII_USER_NAME
+RUN groupadd $EII_USER_NAME -g $EII_UID && \
+    useradd -r -u $EII_UID -g $EII_USER_NAME $EII_USER_NAME
+
 WORKDIR /EII
 ENV GOPATH="/go"
 ARG ARTIFACTS
@@ -158,6 +162,7 @@ ENV PYTHONPATH $PYTHONPATH:${GOPATH}/src/github.com/influxdata/kapacitor/udf/age
 ENV GOCACHE "/tmp"
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib/:/opt/conda/lib/libfabric/:${CMAKE_INSTALL_PREFIX}/lib
 RUN echo "source activate idp" >> /etc/bash.bashrc
+USER $EII_USER_NAME
 ENV PATH $PATH:/app/.local/bin:/opt/conda/bin
 HEALTHCHECK NONE
 
