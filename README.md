@@ -265,7 +265,7 @@ For more information on the supported input and output plugins please refer
             {
                 "Name": "telegraf_sub",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65077",
+                "EndPoint": "ia_telegraf:65077",
                 "PublisherAppName": "Telegraf",
                 "Topics": [
                     "*"
@@ -318,7 +318,7 @@ For more information on the supported input and output plugins please refer
             {
                 "Name": "sample_publisher",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65034",
+                "EndPoint": "0.0.0.0:65034",
                 "Topics": [
                     "sample_topic"
                 ],
@@ -372,7 +372,7 @@ For more information on the supported input and output plugins please refer
             {
                 "Name": "sample_publisher",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65034",
+                "EndPoint": "0.0.0.0:65034",
                 "Topics": [
                     "sample_topic"
                 ],

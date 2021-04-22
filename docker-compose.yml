@@ -42,7 +42,6 @@ services:
     image: ${DOCKER_REGISTRY}ia_kapacitor:${EII_VERSION}
     container_name: ia_kapacitor
     hostname: ia_kapacitor
-    network_mode: host
     read_only: true
     restart: unless-stopped
     ipc: "none"
@@ -55,18 +54,20 @@ services:
       AppName: "Kapacitor"
       DEV_MODE: ${DEV_MODE}
       PROFILING_MODE: ${PROFILING_MODE}
-      no_proxy: ${eii_no_proxy},${ETCD_HOST}
-      NO_PROXY: ${eii_no_proxy},${ETCD_HOST}
+      no_proxy: "${ETCD_HOST},ia_influxdbconnector,ia_kapacitor"
+      NO_PROXY: "${ETCD_HOST},ia_influxdbconnector,ia_kapacitor"
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
-      KAPACITOR_URL: http://127.0.0.1:$KAPACITOR_PORT/
+      KAPACITOR_URL: http://ia_kapacitor:$KAPACITOR_PORT/
       KAPACITOR_UNSAFE_SSL: "true"
-      KAPACITOR_INFLUXDB_0_URLS_0: http://127.0.0.1:$INFLUXDB_PORT/
-      INFLUX_SERVER: '127.0.0.1'
-      KAPACITOR_SERVER: '127.0.0.1'
+      KAPACITOR_INFLUXDB_0_URLS_0: http://ia_influxdbconnector:$INFLUXDB_PORT/
+      INFLUX_SERVER: 'ia_influxdbconnector'
+      KAPACITOR_SERVER: 'ia_kapacitor'
       KAPACITOR_PORT: $KAPACITOR_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
       CertType: "pem,zmq"
+    networks:
+      - eii
     volumes:
        - "vol_temp_kapacitor:/tmp/"
     ports:
