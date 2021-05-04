@@ -62,7 +62,7 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
    
     ```
     $ cd ../../build
-    $ python3.6 builder.py
+    $ python3 builder.py
     $ docker-compose build
     $ cd provision/
     $ sudo ./provision.sh ../docker-compose.yml
