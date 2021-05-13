@@ -1,0 +1,5 @@
+config:
+    kapacitor:
+      name: kapacitor
+      kapacitor_port: 9092
+      publisher_port: 65034
