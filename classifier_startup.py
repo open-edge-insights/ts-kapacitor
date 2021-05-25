@@ -321,7 +321,7 @@ def main():
     except Exception as e:
         logger = configure_logging(os.getenv('PY_LOG_LEVEL', 'info').upper(),
                                    __name__, dev_mode)
-        logger.error("Fetching app configuration failed, Error: {}".format(e))
+        logger.exception("Fetching app configuration failed, Error: {}".format(e))
         sys.exit(1)
 
     logger = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),
