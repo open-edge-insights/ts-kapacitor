@@ -62,16 +62,34 @@ RUN echo "$HOST_TIME_ZONE" >/etc/timezone && \
 ENV HOME /app
 ENV KAPACITOR_REPO ${GOPATH}/src/github.com/influxdata/kapacitor
 
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    chmod +x Miniconda3-latest-Linux-x86_64.sh && \
+    ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda && \
+    rm Miniconda3-latest-Linux-x86_64.sh
+
+ARG INTELPYTHON_VERSION
+RUN conda update conda -y && \
+    conda config --add channels intel && \
+    conda create -y -n idp intelpython3_core=${INTELPYTHON_VERSION} python=3.7 && \
+    conda install -y -n idp daal4py
+
+# Installing required python library
+COPY requirements.txt ./
+RUN /bin/bash -c "source activate idp && \
+    python3.7 -m pip install -r requirements.txt"
+
 # Installing Kapacitor from source
 ARG KAPACITOR_VERSION
 COPY ./eii_msgbus_integration.patch /tmp/eii_msgbus_integration.patch
 RUN mkdir -p ${KAPACITOR_REPO} && \
     git clone https://github.com/influxdata/kapacitor.git ${KAPACITOR_REPO} && \
+    /bin/bash -c "source activate idp && \
     cd ${KAPACITOR_REPO} && \
     git checkout -b v${KAPACITOR_VERSION} tags/v${KAPACITOR_VERSION} && \
     cd .. && \
     patch -p0 < /tmp/eii_msgbus_integration.patch && \
     rm -rf /tmp/eii_msgbus_integration.patch
+
 COPY ./kapacitor/services/  \
      ${KAPACITOR_REPO}/vendor/github.com/influxdata/influxdb/services/
 COPY ./kapacitor/eii_out.go  ${KAPACITOR_REPO}/
@@ -93,21 +111,6 @@ ENV PATH="$PATH:/usr/local/go/bin" \
 ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIC" \
     CGO_LDFLAGS="$CGO_LDFLAGS -L${CMAKE_INSTALL_PREFIX}/lib -z noexecstack -z relro -z now"
 
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    chmod +x Miniconda3-latest-Linux-x86_64.sh && \
-    ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda && \
-    rm Miniconda3-latest-Linux-x86_64.sh
-
-ARG INTELPYTHON_VERSION
-RUN conda update conda -y && \
-    conda config --add channels intel && \
-    conda create -y -n idp intelpython3_core=${INTELPYTHON_VERSION} python=3.7 && \
-    conda install -y -n idp daal4py
-
-# Installing required python library
-COPY requirements.txt ./
-RUN /bin/bash -c "source activate idp && \
-    python3.7 -m pip install --user -r requirements.txt"
 
 # Build kapacitor
 RUN /bin/bash -c "source activate idp && \
