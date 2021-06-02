@@ -88,7 +88,7 @@ RUN mkdir -p ${KAPACITOR_REPO} && \
     git checkout -b v${KAPACITOR_VERSION} tags/v${KAPACITOR_VERSION} && \
     cd .. && \
     patch -p0 < /tmp/eii_msgbus_integration.patch && \
-    rm -rf /tmp/eii_msgbus_integration.patch
+    rm -rf /tmp/eii_msgbus_integration.patch"
 
 COPY ./kapacitor/services/  \
      ${KAPACITOR_REPO}/vendor/github.com/influxdata/influxdb/services/
