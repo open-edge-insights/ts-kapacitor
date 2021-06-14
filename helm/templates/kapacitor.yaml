@@ -52,12 +52,12 @@ spec:
     spec:
       containers:
       - name: ia-kapacitor
-        image: {{ .Values.registry }}ia_kapacitor:{{ .Values.eii_version }}
+        image: {{ .Values.DOCKER_REGISTRY }}ia_kapacitor:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         securityContext:
           privileged: true
         volumeMounts:
-        {{ if eq .Values.env.dev_mode false}}
+        {{ if eq .Values.env.DEV_MODE false}}
         - name: etcd-certs
           mountPath: /run/secrets/etcd/
         {{ end }}
@@ -66,7 +66,7 @@ spec:
         - name: AppName
           value: "Kapacitor"
         - name: DEV_MODE
-          value: '{{ .Values.env.dev_mode }}'
+          value: '{{ .Values.env.DEV_MODE }}'
         - name: PROFILING_MODE
           value: '{{ .Values.env.PROFILING_MODE }}'
         - name: ETCD_HOST
@@ -97,7 +97,7 @@ spec:
           value: "influxdbconnector"
         - name: KAPACITOR_SERVER
           value: "kapacitor"
-        {{ if eq .Values.env.dev_mode false}}
+        {{ if eq .Values.env.DEV_MODE false}}
         - name: CONFIGMGR_CACERT
           value: "/run/secrets/etcd/ca_certificate.pem"
         - name: CONFIGMGR_CERT
@@ -107,7 +107,7 @@ spec:
         {{ end }}
 
       volumes:
-      {{ if eq .Values.env.dev_mode false}}
+      {{ if eq .Values.env.DEV_MODE false}}
       - name: etcd-certs
         secret:
           secretName: eii-certs
