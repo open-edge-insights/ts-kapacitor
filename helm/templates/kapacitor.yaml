@@ -57,6 +57,10 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
+        {{- if eq .Values.config.kapacitor.IPC true}}
+        - name: {{ .Values.volumes.eii_socket.name }}
+          mountPath: {{ .Values.volumes.eii_socket.location }}
+        {{- end }}
         {{ if eq .Values.env.DEV_MODE false}}
         - name: etcd-certs
           mountPath: /run/secrets/etcd/
@@ -79,6 +83,7 @@ spec:
           value: "http://kapacitor:{{ .Values.config.kapacitor.kapacitor_port }}/"
         - name: KAPACITOR_UNSAFE_SSL
           value: "true"
+        {{- if eq .Values.config.telegraf.IPC false}}
         - name: PUBLISHER_sample_publisher_TYPE
           value: "zmq_tcp"
         - name: PUBLISHER_sample_publisher_ENDPOINT
@@ -88,6 +93,16 @@ spec:
           value: "{{ .Values.config.telegraf.name }}:{{ .Values.config.telegraf.publisher_port }}"
         - name: SUBSCRIBER_telegraf_sub_TYPE
           value: "zmq_tcp"
+        {{- end }}
+        {{- else }}
+        - name: PUBLISHER_sample_publisher_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_sample_publisher_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: SUBSCRIBER_telegraf_sub_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }},telegraf-out"
+        - name: SUBSCRIBER_telegraf_sub_TYPE
+          value: "zmq_ipc"
         {{- end }}
         {{- if .Values.config.influxdbconnector }}
         - name: KAPACITOR_INFLUXDB_0_URLS_0
@@ -107,6 +122,11 @@ spec:
         {{ end }}
 
       volumes:
+      {{- if eq .Values.config.kapacitor.IPC true}}
+      - name: {{ .Values.volumes.eii_socket.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.volumes.eii_socket.name }}
+      {{- end }}
       {{ if eq .Values.env.DEV_MODE false}}
       - name: etcd-certs
         secret:
