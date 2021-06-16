@@ -44,11 +44,12 @@ RUN mkdir $ARTIFACTS \
           $ARTIFACTS/bin \
           $ARTIFACTS/kapacitor
 
-#Installing Go and dep package manager tool for Go
+# Installing Golang and other deps
 ARG GO_VERSION
 RUN apt-get update && \
     wget https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
+    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
+    apt-get install -y pkg-config
 
 ARG DEBIAN_FRONTEND=noninteractive
 # Setting timezone inside the container
@@ -102,7 +103,7 @@ COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
 COPY --from=common ${GOPATH}/src ${GOPATH}/src/
 COPY --from=common /eii/common/util util
 COPY --from=common /eii/common/libs libs
-RUN apt-get update && apt-get install -y pkg-config
+
 ENV PATH="$PATH:/usr/local/go/bin" \
     PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" \
     LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib"
