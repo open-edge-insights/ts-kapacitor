@@ -44,6 +44,7 @@ RUN mkdir $ARTIFACTS \
           $ARTIFACTS/bin \
           $ARTIFACTS/kapacitor
 
+ARG DEBIAN_FRONTEND=noninteractive
 # Installing Golang and other deps
 ARG GO_VERSION
 RUN apt-get update && \
@@ -51,7 +52,6 @@ RUN apt-get update && \
     tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
     apt-get install -y pkg-config
 
-ARG DEBIAN_FRONTEND=noninteractive
 # Setting timezone inside the container
 RUN echo "$HOST_TIME_ZONE" >/etc/timezone && \
     cat /etc/timezone && \
