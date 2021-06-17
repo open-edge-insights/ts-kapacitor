@@ -21,10 +21,9 @@
 # Dockerfile for Point Data Analytics
 
 ARG EII_VERSION
-ARG DOCKER_REGISTRY
 ARG ARTIFACTS="/artifacts"
 ARG UBUNTU_IMAGE_VERSION
-FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
+FROM ia_common:$EII_VERSION as common
 FROM ubuntu:$UBUNTU_IMAGE_VERSION as base
 
 FROM base as builder
