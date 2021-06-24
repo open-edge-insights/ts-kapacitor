@@ -50,6 +50,10 @@ spec:
       labels:
         app: kapacitor
     spec:
+      {{- if and .Values.DOCKER_USERNAME .Values.DOCKER_PASSWORD }}
+      imagePullSecrets:
+      - name: registryauth
+      {{- end }}
       containers:
       - name: ia-kapacitor
         image: {{ .Values.DOCKER_REGISTRY }}ia_kapacitor:{{ .Values.EII_VERSION }}
