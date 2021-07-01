@@ -259,8 +259,9 @@ For more information on the supported input and output plugins please refer
   * Edit [config.json](config.json) to add a subscriber under interfaces.
 
     For example, to receive data published by Telegraf:
-    ```
 
+    **TCP mode**
+    ```
         "Subscribers": [
             {
                 "Name": "telegraf_sub",
@@ -273,6 +274,31 @@ For more information on the supported input and output plugins please refer
             }
         ]
     ```
+
+    **IPC mode**
+    ```
+        "Subscribers": [
+            {
+                "Name": "telegraf_sub",
+                "Type": "zmq_ipc",
+                "EndPoint": {
+                    "SocketDir": "/EII/sockets",
+                    "SocketFile": "telegraf-out"
+                },
+                "PublisherAppName": "Telegraf",
+                "Topics": [
+                    "*"
+                ]
+            }
+        ]
+    ```
+    **Note: For IPC mode, we need to specify the 'EndPoint' as a dict of 'SocketDir' and 'SocketFile' in case
+    where 'Topics' is [*] (as in the above example).
+    In case of single topic the 'EndPoint' can be defined as below (as in the example of Kapacitor o/p plugin):**
+    ```
+   	"EndPoint": "/EII/sockets"
+    ```
+
     The received data will be available in the 'eii' storage for the tick scripts to use.
   * Create/modify a tick script to process the data and configure the same in [config.json](config.json).
     For example, use the stock [tick_scripts/eii_input_plugin_logging.tick](tick_scripts/eii_input_plugin_logging.tick) which logs the data received from 'eii'
@@ -313,12 +339,32 @@ For more information on the supported input and output plugins please refer
   * Add a publisher interface added to [config.json](config.json) with the same publisher name and topic 
     i.e. 'sample_publisher' and 'sample_topic' respectively as in the above example.
     For example:
+   
+    **TCP mode**
     ```
         "Publishers": [
             {
                 "Name": "sample_publisher",
                 "Type": "zmq_tcp",
                 "EndPoint": "0.0.0.0:65034",
+                "Topics": [
+                    "sample_topic"
+                ],
+                "AllowedClients": [
+                    "TimeSeriesProfiler"
+                ]
+            }
+        ]
+
+    ```
+
+    **IPC mode**
+    ```
+        "Publishers": [
+            {
+                "Name": "sample_publisher",
+                "Type": "zmq_ipc",
+                "EndPoint": "/EII/sockets",
                 "Topics": [
                     "sample_topic"
                 ],
@@ -367,6 +413,9 @@ For more information on the supported input and output plugins please refer
   * Add a publisher interface added to [config.json](config.json) with the same publisher name and topic 
     i.e. 'sample_publisher' and 'sample_topic' respectively as in the above example.
     For example:
+
+
+    **TCP mode**
     ```
         "Publishers": [
             {
@@ -385,4 +434,25 @@ For more information on the supported input and output plugins please refer
         ]
 
     ```
+
+    **IPC mode**
+    ```
+        "Publishers": [
+            {
+                "Name": "sample_publisher",
+                "Type": "zmq_ipc",
+                "EndPoint": "/EII/sockets",
+                "Topics": [
+                    "sample_topic"
+                ],
+                "AllowedClients": [
+                    "TimeSeriesProfiler",
+                    "EmbSubscriber",
+                    "GoSubscriber"
+                ]
+            }
+        ]
+
+    ```
+
   * Do the [provisioning](../README.md#provision) and run the EII stack.

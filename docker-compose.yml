@@ -69,6 +69,7 @@ services:
       - eii
     volumes:
        - "vol_temp_kapacitor:/tmp/"
+       - "vol_eii_socket:${SOCKET_DIR}"
     ports:
       - "$KAPACITOR_PORT:$KAPACITOR_PORT"
     secrets:
