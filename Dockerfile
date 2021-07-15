@@ -62,10 +62,10 @@ RUN echo "$HOST_TIME_ZONE" >/etc/timezone && \
 ENV HOME /app
 ENV KAPACITOR_REPO ${GOPATH}/src/github.com/influxdata/kapacitor
 
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    chmod +x Miniconda3-latest-Linux-x86_64.sh && \
-    ./Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda && \
-    rm Miniconda3-latest-Linux-x86_64.sh
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-4.7.12-Linux-x86_64.sh && \
+    chmod +x Miniconda3-4.7.12-Linux-x86_64.sh && \
+    ./Miniconda3-4.7.12-Linux-x86_64.sh -b -p /opt/conda && \
+    rm Miniconda3-4.7.12-Linux-x86_64.sh
 
 ARG INTELPYTHON_VERSION
 RUN conda update conda -y && \
