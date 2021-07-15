@@ -27,7 +27,7 @@ spec:
   ports:
   - port: {{ .Values.config.kapacitor.kapacitor_port }}
     name: kapacitor-port
-  - port: {{ .Values.config.kapacitor.publisher_port }}
+  - port: {{ .Values.config.kapacitor.publish_port }}
     name: publisher-port
   selector:
     app: kapacitor
@@ -91,10 +91,10 @@ spec:
         - name: PUBLISHER_sample_publisher_TYPE
           value: "zmq_tcp"
         - name: PUBLISHER_sample_publisher_ENDPOINT
-          value: "0.0.0.0:{{ .Values.config.kapacitor.publisher_port }}"
+          value: "0.0.0.0:{{ .Values.config.kapacitor.publish_port }}"
         {{- if .Values.config.telegraf }}
         - name: SUBSCRIBER_telegraf_sub_ENDPOINT
-          value: "{{ .Values.config.telegraf.name }}:{{ .Values.config.telegraf.publisher_port }}"
+          value: "{{ .Values.config.telegraf.name }}:{{ .Values.config.telegraf.publish_port }}"
         - name: SUBSCRIBER_telegraf_sub_TYPE
           value: "zmq_tcp"
         {{- end }}
