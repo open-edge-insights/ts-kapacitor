@@ -67,11 +67,12 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-4.7.12-Linux-x86_64.sh &
     ./Miniconda3-4.7.12-Linux-x86_64.sh -b -p /opt/conda && \
     rm Miniconda3-4.7.12-Linux-x86_64.sh
 
+COPY conda_requirements.txt ./
 ARG INTELPYTHON_VERSION
 RUN conda update conda -y && \
     conda config --add channels intel && \
     conda create -y -n idp intelpython3_core=${INTELPYTHON_VERSION} python=3.7 && \
-    conda install -y -n idp daal4py
+    conda install -y -n idp --file conda_requirements.txt
 
 # Installing required python library
 COPY requirements.txt ./
