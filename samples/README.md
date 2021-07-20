@@ -1,3 +1,10 @@
+**Contents**
+
+- [Introduction to samples of multiple UDFs in a single task and multiple tasks with single UDF](#introduction-to-samples-of-multiple-udfs-in-a-single-task-and-multiple-tasks-with-single-udf)
+  - [Steps to run the samples](#steps-to-run-the-samples)
+  - [Steps to verify the results in single task with multiple UDFs](#steps-to-verify-the-results-in-single-task-with-multiple-udfs)
+  - [Steps to verify the results in multiple tasks with single UDF](#steps-to-verify-the-results-in-multiple-tasks-with-single-udf)
+
 # Introduction to samples of multiple UDFs in a single task and multiple tasks with single UDF
 
 Implementation of 2 simple examples to showcase the use of a single task with multiple UDFs and multiple tasks with single UDF in Kapacitor.
@@ -54,23 +61,10 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
     $ cp single_udf_multi_tasks/tick_scripts/temperature_classifier.tick ../tick_scripts/
     ```
 
-  5. Starting the EII stack.
-
-  * To start the EII in production mode, provisioning is required. For more information on provisioning
-    please refer the [README](../../README.md#provision).
-    After provisioning, please follow the below commands
-   
-    ```
-    $ cd ../../build
-    $ python3 builder.py
-    $ docker-compose build
-    $ cd provision/
-    $ sudo ./provision.sh ../docker-compose.yml
-    $ cd ..
-    $ docker-compose up -d
-    ```
-
-    To start the EII in developer mode, please refer to the [README](../README.md#provision).
+  5. Please go through the below sections to bring up EII stack:
+      - [../README.md#generate-deployment-and-configuration-files](../README.md#generate-deployment-and-configuration-files)
+      - [../README.md#provision](../README.md#provision)
+      - [../README.md#build-and-run-eii-videotimeseries-use-cases](../README.md#build-and-run-eii-videotimeseries-use-cases)
 
   6. To start the mqtt-publisher with temperature and humidity data, please refer [tools/mqtt-publisher/README.md](../tools/mqtt-publisher/README.md)
 

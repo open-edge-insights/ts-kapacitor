@@ -1,3 +1,18 @@
+**Contents**
+
+- [Point-data (Time-series data) analytics introduction](#point-data-time-series-data-analytics-introduction)
+  - [Starting the example](#starting-the-example)
+  - [Purpose of Telegraf](#purpose-of-telegraf)
+  - [Purpose of Kapacitor](#purpose-of-kapacitor)
+  - [Custom UDFs available in the udfs directory](#custom-udfs-available-in-the-udfs-directory)
+  - [Steps to configure the UDFs in kapacitor.](#steps-to-configure-the-udfs-in-kapacitor)
+  - [Step to run the samples of multiple UDFs in a single task and multiple tasks using single UDF](#step-to-run-the-samples-of-multiple-udfs-in-a-single-task-and-multiple-tasks-using-single-udf)
+- [Kapacitor input and output plugins](#kapacitor-input-and-output-plugins)
+  - [Purpose of plugins](#purpose-of-plugins)
+  - [Using input plugin](#using-input-plugin)
+  - [Using output plugin](#using-output-plugin)
+  - [Using input/output plugin with RFC udf](#using-inputoutput-plugin-with-rfc-udf)
+
 # Point-data (Time-series data) analytics introduction
 
 Any integral value that gets generated over time, we can say it is a point data.
@@ -230,7 +245,7 @@ For more information on the supported input and output plugins please refer
 
   * Do the [provisioning](../README.md#provision) and run the EII stack.
 
-## Step to run the samples of multiple UDFs in a single task and mulitple tasks using single UDF
+## Step to run the samples of multiple UDFs in a single task and multiple tasks using single UDF
 
   * please refer to the [samples/README](samples/README.md)
 
