@@ -52,7 +52,7 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
    After provisioning, please follow the below commands
    ```
    cd build
-   docker-compose build
+   docker-compose -f docker-compose-build.yml build
    docker-compose up -d
    ```
 
