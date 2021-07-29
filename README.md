@@ -171,6 +171,7 @@ For more information on the supported input and output plugins please refer
   * Modify the udf section in the [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
     Mention the custom UDF in the conf
     for example
+    
     ```
     [udf.functions.customUDF]
       socket = "/tmp/socket_file"
@@ -180,6 +181,7 @@ For more information on the supported input and output plugins please refer
   * In case of go/python based UDF, update the values of keys named "type", "name", "tick_script", "task_name", in the
     [config.json](config.json)file.
     for example
+    
     ```
     "task": [{
          "tick_script": "py_point_classifier.tick",
@@ -193,6 +195,7 @@ For more information on the supported input and output plugins please refer
 
   * In case of, tick only UDF, update the values of keys named "tick_script", "task_name", in the [config.json](config.json)file.
     for example
+    
     ```
     "task": [{
          "tick_script": "simple_logging.tick",
@@ -205,6 +208,7 @@ For more information on the supported input and output plugins please refer
 
     2. Mention the TICK script udf function same as configured in the Kapacitor config file.
        For example, UDF Node in the TICK script
+       
        ```
        @py_point_classifier()
        ```
@@ -218,6 +222,7 @@ For more information on the supported input and output plugins please refer
     3. go/python based UDF should listen on the same socket file as mentioned in the the udf section in the
        [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
        For example
+       
        ```
        [udf.functions.customUDF]
          socket = "/tmp/socket_file"
@@ -234,6 +239,7 @@ For more information on the supported input and output plugins please refer
        it is shown in the below example.
 
        For example
+       
        ```
        [udf.functions.customUDF]
           prog = "python3.7"
@@ -267,6 +273,7 @@ For more information on the supported input and output plugins please refer
 
   * Configure the EII input plugin in [config/kapacitor.conf](config/kapacitor.conf) and [config/kapacitor_devmode.conf](config/kapacitor_devmode.conf)
     For example:
+    
     ```
     [eii]
       enabled = true
@@ -276,6 +283,7 @@ For more information on the supported input and output plugins please refer
     For example, to receive data published by Telegraf:
 
     **TCP mode**
+    
     ```
         "Subscribers": [
             {
@@ -291,6 +299,7 @@ For more information on the supported input and output plugins please refer
     ```
 
     **IPC mode**
+    
     ```
         "Subscribers": [
             {
@@ -310,6 +319,7 @@ For more information on the supported input and output plugins please refer
     **Note: For IPC mode, we need to specify the 'EndPoint' as a dict of 'SocketDir' and 'SocketFile' in case
     where 'Topics' is [*] (as in the above example).
     In case of single topic the 'EndPoint' can be defined as below (as in the example of Kapacitor o/p plugin):**
+    
     ```
    	"EndPoint": "/EII/sockets"
     ```
@@ -318,6 +328,7 @@ For more information on the supported input and output plugins please refer
   * Create/modify a tick script to process the data and configure the same in [config.json](config.json).
     For example, use the stock [tick_scripts/eii_input_plugin_logging.tick](tick_scripts/eii_input_plugin_logging.tick) which logs the data received from 'eii'
     storage onto the kapacitor log file (residing in the container at /tmp/log/kapacitor/kapacitor.log).
+    
     ```
         "task": [
            {
@@ -330,6 +341,7 @@ For more information on the supported input and output plugins please refer
 
     The subscribed data will now be available in the above logs file which can be viewed with the 
     command below:
+    
     ```
     docker exec ia_kapacitor tail -f /tmp/log/kapacitor/kapacitor.log
     ```
@@ -337,6 +349,7 @@ For more information on the supported input and output plugins please refer
 ## Using output plugin
   * Create/modify a tick script to use 'eiiOut' node to send the data using publisher interface
     For example, you may modify the profiling UDF as below:
+    
     ```
     dbrp "eii"."autogen"
 
@@ -356,6 +369,7 @@ For more information on the supported input and output plugins please refer
     For example:
    
     **TCP mode**
+    
     ```
         "Publishers": [
             {
@@ -374,6 +388,7 @@ For more information on the supported input and output plugins please refer
     ```
 
     **IPC mode**
+    
     ```
         "Publishers": [
             {
@@ -394,6 +409,7 @@ For more information on the supported input and output plugins please refer
 
 ## Using input/output plugin with RFC udf
   * Add the RFC task to [config.json](config.json):
+    
     ```
         "task": [
            {
@@ -407,6 +423,7 @@ For more information on the supported input and output plugins please refer
         ]
     ```
   * Modify the [rfc_task.tick](tick_scripts/rfc_task.tick) as below, for example:
+    
     ```
     dbrp "eii"."autogen"
 
@@ -431,6 +448,7 @@ For more information on the supported input and output plugins please refer
 
 
     **TCP mode**
+    
     ```
         "Publishers": [
             {
@@ -451,6 +469,7 @@ For more information on the supported input and output plugins please refer
     ```
 
     **IPC mode**
+    
     ```
         "Publishers": [
             {
