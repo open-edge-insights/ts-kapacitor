@@ -62,11 +62,11 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
     ```
 
   5. Please go through the below sections to bring up EII stack:
-      - [../README.md#generate-deployment-and-configuration-files](../README.md#generate-deployment-and-configuration-files)
-      - [../README.md#provision](../README.md#provision)
-      - [../README.md#build-and-run-eii-videotimeseries-use-cases](../README.md#build-and-run-eii-videotimeseries-use-cases)
+      - [../README.md#generate-deployment-and-configuration-files](https://github.com/open-edge-insights/eii-core/blob/master/README.md#generate-deployment-and-configuration-files)
+      - [../README.md#provision](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision)
+      - [../README.md#build-and-run-eii-videotimeseries-use-cases](https://github.com/open-edge-insights/eii-core/blob/master/README.md#build-and-run-eii-videotimeseries-use-cases)
 
-  6. To start the mqtt-publisher with temperature and humidity data, please refer [tools/mqtt-publisher/README.md](../tools/mqtt-publisher/README.md)
+  6. To start the mqtt-publisher with temperature and humidity data, please refer [tools/mqtt-publisher/README.md](https://github.com/open-edge-insights/eii-tools/blob/master/mqtt-publisher/README.md)
 
 ## Steps to verify the results in single task with multiple UDFs
 

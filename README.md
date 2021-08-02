@@ -41,14 +41,14 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
 
 ## Starting the example
 
-1. To start the mqtt-temp-sensor, please refer [tools/mqtt-publisher/README.md](../tools/mqtt-publisher/README.md).
+1. To start the mqtt-temp-sensor, please refer [tools/mqtt-publisher/README.md](https://github.com/open-edge-insights/eii-tools/blob/master/mqtt/README.md).
 
 2. In case, if SI wants to use the IEdgeInsights only for Point Data Analytics,
    then comment Video use case containers ia_video_ingestion and ia_video_analytics in [build/docker-compose.yml](../build/docker-compose.yml)
 
 3. Starting the EII.
    To start the EII in production mode, provisioning is required. For more information on provisioning
-   please refer the [README](../README.md#provision).
+   please refer the [README](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision).
    After provisioning, please follow the below commands
    ```
    cd build
@@ -56,7 +56,7 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
    docker-compose up -d
    ```
 
-   To start the EII in developer mode, please refer to the [README](../README.md#provision).
+   To start the EII in developer mode, please refer to the [README](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision).
 
 4. To verify the output please check the output of below command
    ```
@@ -70,7 +70,7 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
    I0822 09:03:02.704000       1 pubManager.go:111] Published message: map[data:point_data,host=ia_telegraf,topic=temperature/simulated/0 ts=1566464582.6218634,temperature=27.353740759929877 1566464582622771952]
    ```
 
-   The data can be visualized using the Grafana dashboard, to know more refer [Grafana/README.md](../Grafana/README.md)
+   The data can be visualized using the Grafana dashboard, to know more refer [Grafana/README.md](https://github.com/open-edge-insights/ts-grafana/blob/master/README.md)
 
 ## Purpose of Telegraf
 Telegraf is one of the data entry points for IEdgeInsights. It supports many input plugins, which can be used for
@@ -109,9 +109,9 @@ of the plugin.
     ```
 
 The production mode Telegraf configuration file is
-[Telegraf/config/telegraf.conf](../Telegraf/config/telegraf.conf) and in developer mode,
+[Telegraf/config/telegraf.conf](https://github.com/open-edge-insights/ts-telegraf/blob/master/config/Telegraf/Telegraf.conf) and in developer mode,
 the configuration file is
-[Telegraf/config/telegraf_devmode.conf](../Telegraf/config/telegraf_devmode.conf).
+[Telegraf/config/telegraf_devmode.conf](https://github.com/open-edge-insights/ts-telegraf/blob/master/config/Telegraf/Telegraf_devmode.conf).
 
 For more information on the supported input and output plugins please refer
 [https://docs.influxdata.com/telegraf/v1.10/plugins/](https://docs.influxdata.com/telegraf/v1.10/plugins/)
@@ -127,11 +127,11 @@ For more information on the supported input and output plugins please refer
     gets the temperature data. After getting this data, Kapacitor calls these UDF, which detects the anomaly in the temperature
     and sends back the results to Influx.
 
-  * The sample Go UDF is at [go_classifier.go](udf/go_point_classifier.go) and
-    the tick script  is at [go_point_classifier.tick](TICK_script/go_point_classifier.tick)
+  * The sample Go UDF is at [go_classifier.go](udfs/go_classifier.go) and
+    the tick script  is at [go_point_classifier.tick](tick_scripts/go_point_classifier.tick)
 
-  * The sample Python UDF is at [py_classifier.py](udf/py_point_classifier.py) and
-    the tick script  is at [py_point_classifier.tick](TICK_script/py_point_classifier.tick)
+  * The sample Python UDF is at [py_classifier.py](udfs/py_classifier.py) and
+    the tick script  is at [py_point_classifier.tick](tick_scripts/py_point_classifier.tick)
 
     For more details, on Kapacitor and UDF, please refer below links
     i)  Writing a sample UDF at [anomaly detection](https://docs.influxdata.com/kapacitor/v1.5/guides/anomaly_detection/)
@@ -249,11 +249,11 @@ For more information on the supported input and output plugins please refer
              PYTHONPATH = "/go/src/github.com/influxdata/kapacitor/udf/agent/py/"
        ```
 
-  * Do the [provisioning](../README.md#provision) and run the EII stack.
+  * Do the [provisioning](8https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision) and run the EII stack.
 
 ## Step to run the samples of multiple UDFs in a single task and multiple tasks using single UDF
 
-  * please refer to the [samples/README](samples/README.md)
+  * please refer to the [samples/README](https://github.com/open-edge-insights/eii-samples/blob/master/README.md)
 
 # Kapacitor input and output plugins
 
@@ -337,7 +337,7 @@ For more information on the supported input and output plugins please refer
            }
         ]
     ```
-  * Do the [provisioning](../README.md#provision) and run the EII stack.
+  * Do the [provisioning](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision) and run the EII stack.
 
     The subscribed data will now be available in the above logs file which can be viewed with the 
     command below:
@@ -405,7 +405,7 @@ For more information on the supported input and output plugins please refer
         ]
 
     ```
-  * Do the [provisioning](../README.md#provision) and run the EII stack.
+  * Do the [provisioning](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision) and run the EII stack.
 
 ## Using input/output plugin with RFC udf
   * Add the RFC task to [config.json](config.json):
@@ -489,4 +489,4 @@ For more information on the supported input and output plugins please refer
 
     ```
 
-  * Do the [provisioning](../README.md#provision) and run the EII stack.
+  * Do the [provisioning](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision) and run the EII stack.
