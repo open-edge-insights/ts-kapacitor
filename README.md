@@ -44,7 +44,7 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
 1. To start the mqtt-temp-sensor, please refer [tools/mqtt-publisher/README.md](https://github.com/open-edge-insights/eii-tools/blob/master/mqtt/README.md).
 
 2. In case, if SI wants to use the IEdgeInsights only for Point Data Analytics,
-   then comment Video use case containers ia_video_ingestion and ia_video_analytics in [build/docker-compose.yml](../build/docker-compose.yml)
+   then comment Video use case containers ia_video_ingestion and ia_video_analytics in `../build/docker-compose.yml`
 
 3. Starting the EII.
    To start the EII in production mode, provisioning is required. For more information on provisioning
