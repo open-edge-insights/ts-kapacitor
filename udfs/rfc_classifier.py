@@ -41,10 +41,11 @@ class RfcHandler(Handler):
         # maxDepth, numOfTree are tuned based on dataset
         maxDepth = 50
         numOfTree = 600
-        train_algo = d4p.decision_forest_classification_training(maxTreeDepth=maxDepth,
-                                                                 nClasses=2, nTrees=numOfTree,
-                                                                 engine=d4p.engines_mt2203(seed=0),
-                                                                 varImportance='MDI', bootstrap=True)
+        train_algo = d4p.decision_forest_classification_training(
+            maxTreeDepth=maxDepth,
+            nClasses=2, nTrees=numOfTree,
+            engine=d4p.engines_mt2203(seed=0),
+            varImportance='MDI', bootstrap=True)
 
         self.train_result = train_algo.compute(X_train, y_train)
         logging.info("training complete...")
@@ -181,9 +182,10 @@ class RfcHandler(Handler):
                     'Message.Log.Name38': jsonObj['Message']['Log']['Name38']},
                     ignore_index=True)
 
-        # Inference with daal4py 
+        # Inference with daal4py
         self.predict_algo = d4p.decision_forest_classification_prediction(2)
-        self.predict_result = self.predict_algo.compute(df, self.train_result.model)
+        self.predict_result = self.predict_algo.compute(
+            df, self.train_result.model)
         self.rfc_prediction_pred = self.predict_result.prediction
         self.rfc_prediction = self.rfc_prediction_pred[0, 0].item()
         self.pred.append(self.rfc_prediction)
@@ -210,8 +212,10 @@ class RfcHandler(Handler):
             self.response.point.fieldsDouble['prediction'] = self.pred[i]
             self.response.point.time = self.batchTS[i]
             if self.profiling_mode:
-                self.response.point.fieldsInt['ts_kapacitor_udf_entry'] = int(self.udf_entry[i])
-                self.response.point.fieldsInt['ts_kapacitor_udf_exit'] = int(self.udf_exit[i])
+                self.response.point.fieldsInt['ts_kapacitor_udf_entry'] = \
+                    int(self.udf_entry[i])
+                self.response.point.fieldsInt['ts_kapacitor_udf_exit'] = \
+                    int(self.udf_exit[i])
                 self.response.point.fieldsDouble['ts'] = self.ts[i]
 
             logging.info(self.response)

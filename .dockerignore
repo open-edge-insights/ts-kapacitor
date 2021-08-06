@@ -1,0 +1,8 @@
+# READMEs
+*.md
+
+# Docker and orchestrator specific files
+Dockerfile
+*.yml
+*_spec.json
+

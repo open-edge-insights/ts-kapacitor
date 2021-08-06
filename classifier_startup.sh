@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # Copyright (c) 2021 Intel Corporation.
 
@@ -23,5 +23,4 @@
 source activate idp
 
 python3.7 ./classifier_startup.py
-
 

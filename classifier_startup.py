@@ -92,10 +92,11 @@ class KapacitorClassifier():
     def read_config(self, config, dev_mode, app_name):
         """Read the configuration from etcd
         """
-        os.environ['KAPACITOR_INFLUXDB_0_USERNAME'] = config['influxdb'
-                                                             ]['username']
-        os.environ['KAPACITOR_INFLUXDB_0_PASSWORD'] = config['influxdb'
-                                                             ]['password']
+        if 'influxdb' in config:
+            os.environ['KAPACITOR_INFLUXDB_0_USERNAME'] = \
+                config['influxdb']['username']
+            os.environ['KAPACITOR_INFLUXDB_0_PASSWORD'] = \
+                config['influxdb']['password']
 
         if not dev_mode:
             server_cert = config["server_cert"]
@@ -318,9 +319,9 @@ def main():
         app_name = ctx.get_app_name()
         dev_mode = ctx.is_dev_mode()
     except Exception as e:
-        logger = configure_logging(os.getenv('PY_LOG_LEVEL','info').upper(),
+        logger = configure_logging(os.getenv('PY_LOG_LEVEL', 'info').upper(),
                                    __name__, dev_mode)
-        logger.error("Fetching app configuration failed, Error: {}".format(e))
+        logger.exception("Fetching app configuration failed, Error: {}".format(e))
         sys.exit(1)
 
     logger = configure_logging(os.environ['PY_LOG_LEVEL'].upper(),

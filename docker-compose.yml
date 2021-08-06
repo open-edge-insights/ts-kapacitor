@@ -32,14 +32,15 @@ services:
         EII_VERSION: ${EII_VERSION}
         KAPACITOR_VERSION: ${KAPACITOR_VERSION}
         INTELPYTHON_VERSION: ${INTELPYTHON_VERSION}
-        UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
         GO_VERSION: ${GO_VERSION}
         HOST_TIME_ZONE: ${HOST_TIME_ZONE}
-        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
+        CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
+        UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
+        EII_UID: ${EII_UID}
+        EII_USER_NAME: ${EII_USER_NAME}
     image: ${DOCKER_REGISTRY}ia_kapacitor:${EII_VERSION}
     container_name: ia_kapacitor
     hostname: ia_kapacitor
-    network_mode: host
     read_only: true
     restart: unless-stopped
     ipc: "none"
@@ -52,21 +53,23 @@ services:
       AppName: "Kapacitor"
       DEV_MODE: ${DEV_MODE}
       PROFILING_MODE: ${PROFILING_MODE}
-      no_proxy: ${eii_no_proxy},${ETCD_HOST}
-      NO_PROXY: ${eii_no_proxy},${ETCD_HOST}
+      no_proxy: "${ETCD_HOST},ia_influxdbconnector,ia_kapacitor"
+      NO_PROXY: "${ETCD_HOST},ia_influxdbconnector,ia_kapacitor"
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
-      KAPACITOR_URL: http://127.0.0.1:$KAPACITOR_PORT/
+      KAPACITOR_URL: http://ia_kapacitor:$KAPACITOR_PORT/
       KAPACITOR_UNSAFE_SSL: "true"
-      KAPACITOR_INFLUXDB_0_URLS_0: http://127.0.0.1:$INFLUXDB_PORT/
-      INFLUX_SERVER: '127.0.0.1'
-      KAPACITOR_SERVER: '127.0.0.1'
+      KAPACITOR_INFLUXDB_0_URLS_0: http://ia_influxdbconnector:$INFLUXDB_PORT/
+      INFLUX_SERVER: 'ia_influxdbconnector'
+      KAPACITOR_SERVER: 'ia_kapacitor'
       KAPACITOR_PORT: $KAPACITOR_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
-      CertType: "pem"
-    user: ${EII_UID}
+      CertType: "pem,zmq"
+    networks:
+      - eii
     volumes:
        - "vol_temp_kapacitor:/tmp/"
+       - "vol_eii_socket:${SOCKET_DIR}"
     ports:
       - "$KAPACITOR_PORT:$KAPACITOR_PORT"
     secrets:

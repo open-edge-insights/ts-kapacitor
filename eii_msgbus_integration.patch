@@ -1,0 +1,100 @@
+diff -Naur --no-dereference kapacitor.orig/pipeline/node.go kapacitor/pipeline/node.go
+--- kapacitor.orig/pipeline/node.go	2021-03-02 00:00:51.400145545 +0530
++++ kapacitor/pipeline/node.go	2021-03-02 00:05:53.788152356 +0530
+@@ -535,3 +535,9 @@
+ 	n.linkChild(s)
+ 	return s
+ }
++
++func (c *chainnode) EiiOut() *EiiOutNode {
++    h := newEiiOutNode(c.Provides())
++    c.linkChild(h)
++    return h
++}
+diff -Naur --no-dereference kapacitor.orig/server/config.go kapacitor/server/config.go
+--- kapacitor.orig/server/config.go	2021-03-02 00:01:16.924146120 +0530
++++ kapacitor/server/config.go	2021-03-02 00:03:26.480149038 +0530
+@@ -63,6 +63,7 @@
+ 	"github.com/influxdata/influxdb/services/collectd"
+ 	"github.com/influxdata/influxdb/services/graphite"
+ 	"github.com/influxdata/influxdb/services/opentsdb"
++	"github.com/influxdata/influxdb/services/eii"
+ )
+ 
+ // Config represents the configuration format for the kapacitord binary.
+@@ -83,6 +84,7 @@
+ 	Collectd collectd.Config   `toml:"collectd"`
+ 	OpenTSDB opentsdb.Config   `toml:"opentsdb"`
+ 	UDP      []udp.Config      `toml:"udp"`
++	EII eii.Config	           `toml:"eii"`
+ 
+ 	// Alert handlers
+ 	Alerta     alerta.Config     `toml:"alerta" override:"alerta"`
+@@ -153,6 +155,7 @@
+ 
+ 	c.Collectd = collectd.NewConfig()
+ 	c.OpenTSDB = opentsdb.NewConfig()
++	c.EII = eii.NewConfig()
+ 
+ 	c.Alerta = alerta.NewConfig()
+ 	c.HipChat = hipchat.NewConfig()
+diff -Naur --no-dereference kapacitor.orig/server/server.go kapacitor/server/server.go
+--- kapacitor.orig/server/server.go	2021-03-02 00:01:16.924146120 +0530
++++ kapacitor/server/server.go	2021-03-02 00:03:26.484149038 +0530
+@@ -14,6 +14,7 @@
+ 	"github.com/influxdata/influxdb/influxql"
+ 	"github.com/influxdata/influxdb/services/collectd"
+ 	"github.com/influxdata/influxdb/services/graphite"
++	"github.com/influxdata/influxdb/services/eii"
+ 	"github.com/influxdata/influxdb/services/meta"
+ 	"github.com/influxdata/influxdb/services/opentsdb"
+ 	"github.com/influxdata/kapacitor"
+@@ -283,6 +284,9 @@
+ 	if err := s.appendGraphiteServices(); err != nil {
+ 		return nil, errors.Wrap(err, "graphite service")
+ 	}
++	if err := s.appendEIIService(); err != nil {
++		return nil, errors.Wrap(err, "EII service")
++	}
+ 
+ 	// Append Scraper and discovery services
+ 	s.appendScraperService()
+@@ -842,6 +846,26 @@
+ 	return nil
+ }
+ 
++func (s *Server) appendEIIService() error {
++	c := s.config.EII
++	if !c.Enabled {
++		fmt.Println("Error: EIIService not enabled")
++		return nil
++	}
++	srv := eii.NewService(c)
++	w, err := s.DiagService.NewStaticLevelHandler("debug", "EII")
++	if err != nil {
++		return fmt.Errorf("failed to create static level handler for eii: %v", err)
++	}
++	srv.SetLogOutput(w)
++
++	srv.MetaClient = s.MetaClient
++	srv.PointsWriter = s.TaskMaster
++	s.AppendService("eii", srv)
++
++	return nil
++}
++
+ func (s *Server) appendUDPServices() {
+ 	for i, c := range s.config.UDP {
+ 		if !c.Enabled {
+diff -Naur --no-dereference kapacitor.orig/task.go kapacitor/task.go
+--- kapacitor.orig/task.go	2021-03-02 00:00:51.416145546 +0530
++++ kapacitor/task.go	2021-03-02 00:05:07.480151313 +0530
+@@ -517,6 +517,8 @@
+ 		n, err = newSideloadNode(et, t, d)
+ 	case *pipeline.BarrierNode:
+ 		n, err = newBarrierNode(et, t, d)
++	case *pipeline.EiiOutNode:
++		n, err = newEiiOutNode(et, t, d)
+ 	default:
+ 		return nil, fmt.Errorf("unknown pipeline node type %T", p)
+ 	}

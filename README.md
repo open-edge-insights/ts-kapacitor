@@ -1,3 +1,18 @@
+**Contents**
+
+- [Point-data (Time-series data) analytics introduction](#point-data-time-series-data-analytics-introduction)
+  - [Starting the example](#starting-the-example)
+  - [Purpose of Telegraf](#purpose-of-telegraf)
+  - [Purpose of Kapacitor](#purpose-of-kapacitor)
+  - [Custom UDFs available in the udfs directory](#custom-udfs-available-in-the-udfs-directory)
+  - [Steps to configure the UDFs in kapacitor.](#steps-to-configure-the-udfs-in-kapacitor)
+  - [Step to run the samples of multiple UDFs in a single task and multiple tasks using single UDF](#step-to-run-the-samples-of-multiple-udfs-in-a-single-task-and-multiple-tasks-using-single-udf)
+- [Kapacitor input and output plugins](#kapacitor-input-and-output-plugins)
+  - [Purpose of plugins](#purpose-of-plugins)
+  - [Using input plugin](#using-input-plugin)
+  - [Using output plugin](#using-output-plugin)
+  - [Using input/output plugin with RFC udf](#using-inputoutput-plugin-with-rfc-udf)
+
 # Point-data (Time-series data) analytics introduction
 
 Any integral value that gets generated over time, we can say it is a point data.
@@ -26,22 +41,22 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
 
 ## Starting the example
 
-1. To start the mqtt-temp-sensor, please refer [tools/mqtt-publisher/README.md](../tools/mqtt-publisher/README.md).
+1. To start the mqtt-temp-sensor, please refer [tools/mqtt-publisher/README.md](https://github.com/open-edge-insights/eii-tools/blob/master/mqtt/README.md).
 
 2. In case, if SI wants to use the IEdgeInsights only for Point Data Analytics,
-   then comment Video use case containers ia_video_ingestion and ia_video_analytics in [build/docker-compose.yml](../build/docker-compose.yml)
+   then comment Video use case containers ia_video_ingestion and ia_video_analytics in `../build/docker-compose.yml`
 
 3. Starting the EII.
    To start the EII in production mode, provisioning is required. For more information on provisioning
-   please refer the [README](../README.md#provision).
+   please refer the [README](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision).
    After provisioning, please follow the below commands
    ```
    cd build
-   docker-compose build
+   docker-compose -f docker-compose-build.yml build
    docker-compose up -d
    ```
 
-   To start the EII in developer mode, please refer to the [README](../README.md#provision).
+   To start the EII in developer mode, please refer to the [README](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision).
 
 4. To verify the output please check the output of below command
    ```
@@ -55,7 +70,7 @@ Kapacitor is an analytics engine where users can write custom analytics plug-ins
    I0822 09:03:02.704000       1 pubManager.go:111] Published message: map[data:point_data,host=ia_telegraf,topic=temperature/simulated/0 ts=1566464582.6218634,temperature=27.353740759929877 1566464582622771952]
    ```
 
-   The data can be visualized using the Grafana dashboard, to know more refer [Grafana/README.md](../Grafana/README.md)
+   The data can be visualized using the Grafana dashboard, to know more refer [Grafana/README.md](https://github.com/open-edge-insights/ts-grafana/blob/master/README.md)
 
 ## Purpose of Telegraf
 Telegraf is one of the data entry points for IEdgeInsights. It supports many input plugins, which can be used for
@@ -94,9 +109,9 @@ of the plugin.
     ```
 
 The production mode Telegraf configuration file is
-[Telegraf/config/telegraf.conf](../Telegraf/config/telegraf.conf) and in developer mode,
+[Telegraf/config/telegraf.conf](https://github.com/open-edge-insights/ts-telegraf/blob/master/config/Telegraf/Telegraf.conf) and in developer mode,
 the configuration file is
-[Telegraf/config/telegraf_devmode.conf](../Telegraf/config/telegraf_devmode.conf).
+[Telegraf/config/telegraf_devmode.conf](https://github.com/open-edge-insights/ts-telegraf/blob/master/config/Telegraf/Telegraf_devmode.conf).
 
 For more information on the supported input and output plugins please refer
 [https://docs.influxdata.com/telegraf/v1.10/plugins/](https://docs.influxdata.com/telegraf/v1.10/plugins/)
@@ -112,11 +127,11 @@ For more information on the supported input and output plugins please refer
     gets the temperature data. After getting this data, Kapacitor calls these UDF, which detects the anomaly in the temperature
     and sends back the results to Influx.
 
-  * The sample Go UDF is at [go_classifier.go](udf/go_point_classifier.go) and
-    the tick script  is at [go_point_classifier.tick](TICK_script/go_point_classifier.tick)
+  * The sample Go UDF is at [go_classifier.go](udfs/go_classifier.go) and
+    the tick script  is at [go_point_classifier.tick](tick_scripts/go_point_classifier.tick)
 
-  * The sample Python UDF is at [py_classifier.py](udf/py_point_classifier.py) and
-    the tick script  is at [py_point_classifier.tick](TICK_script/py_point_classifier.tick)
+  * The sample Python UDF is at [py_classifier.py](udfs/py_classifier.py) and
+    the tick script  is at [py_point_classifier.tick](tick_scripts/py_point_classifier.tick)
 
     For more details, on Kapacitor and UDF, please refer below links
     i)  Writing a sample UDF at [anomaly detection](https://docs.influxdata.com/kapacitor/v1.5/guides/anomaly_detection/)
@@ -156,6 +171,7 @@ For more information on the supported input and output plugins please refer
   * Modify the udf section in the [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
     Mention the custom UDF in the conf
     for example
+    
     ```
     [udf.functions.customUDF]
       socket = "/tmp/socket_file"
@@ -165,6 +181,7 @@ For more information on the supported input and output plugins please refer
   * In case of go/python based UDF, update the values of keys named "type", "name", "tick_script", "task_name", in the
     [config.json](config.json)file.
     for example
+    
     ```
     "task": [{
          "tick_script": "py_point_classifier.tick",
@@ -178,6 +195,7 @@ For more information on the supported input and output plugins please refer
 
   * In case of, tick only UDF, update the values of keys named "tick_script", "task_name", in the [config.json](config.json)file.
     for example
+    
     ```
     "task": [{
          "tick_script": "simple_logging.tick",
@@ -190,6 +208,7 @@ For more information on the supported input and output plugins please refer
 
     2. Mention the TICK script udf function same as configured in the Kapacitor config file.
        For example, UDF Node in the TICK script
+       
        ```
        @py_point_classifier()
        ```
@@ -203,6 +222,7 @@ For more information on the supported input and output plugins please refer
     3. go/python based UDF should listen on the same socket file as mentioned in the the udf section in the
        [kapacitor.conf](config/kapacitor.conf) and in the [kapacitor_devmode.conf](config/kapacitor_devmode.conf).
        For example
+       
        ```
        [udf.functions.customUDF]
          socket = "/tmp/socket_file"
@@ -219,17 +239,254 @@ For more information on the supported input and output plugins please refer
        it is shown in the below example.
 
        For example
+       
        ```
        [udf.functions.customUDF]
           prog = "python3.7"
           args = ["-u", "/EII/udfs/customUDF"]
           timeout = "60s"
           [udf.functions.customUDF.env]
-             PYTHONPATH = "/EII/go/src/github.com/influxdata/kapacitor/udf/agent/py/"
+             PYTHONPATH = "/go/src/github.com/influxdata/kapacitor/udf/agent/py/"
        ```
 
-  * Do the [provisioning](../README.md#provision) and run the EII stack.
+  * Do the [provisioning](8https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision) and run the EII stack.
 
-## Step to run the samples of multiple UDFs in a single task and mulitple tasks using single UDF
+## Step to run the samples of multiple UDFs in a single task and multiple tasks using single UDF
 
-  * please refer to the [samples/README](samples/README.md)
+  * please refer to the [samples/README](https://github.com/open-edge-insights/eii-samples/blob/master/README.md)
+
+# Kapacitor input and output plugins
+
+## Purpose of plugins
+
+  The plugins allow Kapacitor to interact directly with EII message bus. They use message bus publisher/subscriber
+  interface. Using these plugins Kapacitor can now receive data from various EII publishers and send data 
+  to various EII subscribers.
+  Hence, it's possible to have a time-series use case without InfluxDB and Kapacitor can act as
+  an independent analytical engine.
+
+  A simple use case flow can be:
+
+        MQTT-temp-sensor-->Telegraf-->Kapacitor-->TimeseriesProfiler
+
+## Using input plugin
+
+  * Configure the EII input plugin in [config/kapacitor.conf](config/kapacitor.conf) and [config/kapacitor_devmode.conf](config/kapacitor_devmode.conf)
+    For example:
+    
+    ```
+    [eii]
+      enabled = true
+    ```
+  * Edit [config.json](config.json) to add a subscriber under interfaces.
+
+    For example, to receive data published by Telegraf:
+
+    **TCP mode**
+    
+    ```
+        "Subscribers": [
+            {
+                "Name": "telegraf_sub",
+                "Type": "zmq_tcp",
+                "EndPoint": "ia_telegraf:65077",
+                "PublisherAppName": "Telegraf",
+                "Topics": [
+                    "*"
+                ]
+            }
+        ]
+    ```
+
+    **IPC mode**
+    
+    ```
+        "Subscribers": [
+            {
+                "Name": "telegraf_sub",
+                "Type": "zmq_ipc",
+                "EndPoint": {
+                    "SocketDir": "/EII/sockets",
+                    "SocketFile": "telegraf-out"
+                },
+                "PublisherAppName": "Telegraf",
+                "Topics": [
+                    "*"
+                ]
+            }
+        ]
+    ```
+    **Note: For IPC mode, we need to specify the 'EndPoint' as a dict of 'SocketDir' and 'SocketFile' in case
+    where 'Topics' is [*] (as in the above example).
+    In case of single topic the 'EndPoint' can be defined as below (as in the example of Kapacitor o/p plugin):**
+    
+    ```
+   	"EndPoint": "/EII/sockets"
+    ```
+
+    The received data will be available in the 'eii' storage for the tick scripts to use.
+  * Create/modify a tick script to process the data and configure the same in [config.json](config.json).
+    For example, use the stock [tick_scripts/eii_input_plugin_logging.tick](tick_scripts/eii_input_plugin_logging.tick) which logs the data received from 'eii'
+    storage onto the kapacitor log file (residing in the container at /tmp/log/kapacitor/kapacitor.log).
+    
+    ```
+        "task": [
+           {
+             "tick_script": "eii_input_plugin_logging.tick",
+             "task_name": "eii_input_plugin_logging"
+           }
+        ]
+    ```
+  * Do the [provisioning](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision) and run the EII stack.
+
+    The subscribed data will now be available in the above logs file which can be viewed with the 
+    command below:
+    
+    ```
+    docker exec ia_kapacitor tail -f /tmp/log/kapacitor/kapacitor.log
+    ```
+
+## Using output plugin
+  * Create/modify a tick script to use 'eiiOut' node to send the data using publisher interface
+    For example, you may modify the profiling UDF as below:
+    
+    ```
+    dbrp "eii"."autogen"
+
+    var data0 = stream
+        |from()
+                .database('eii')
+                .retentionPolicy('autogen')
+                .measurement('point_data')
+        @profiling_udf()
+        |eiiOut()
+                .pubname('sample_publisher')
+                .topic('sample_topic')
+
+    ```
+  * Add a publisher interface added to [config.json](config.json) with the same publisher name and topic 
+    i.e. 'sample_publisher' and 'sample_topic' respectively as in the above example.
+    For example:
+   
+    **TCP mode**
+    
+    ```
+        "Publishers": [
+            {
+                "Name": "sample_publisher",
+                "Type": "zmq_tcp",
+                "EndPoint": "0.0.0.0:65034",
+                "Topics": [
+                    "sample_topic"
+                ],
+                "AllowedClients": [
+                    "TimeSeriesProfiler"
+                ]
+            }
+        ]
+
+    ```
+
+    **IPC mode**
+    
+    ```
+        "Publishers": [
+            {
+                "Name": "sample_publisher",
+                "Type": "zmq_ipc",
+                "EndPoint": "/EII/sockets",
+                "Topics": [
+                    "sample_topic"
+                ],
+                "AllowedClients": [
+                    "TimeSeriesProfiler"
+                ]
+            }
+        ]
+
+    ```
+  * Do the [provisioning](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision) and run the EII stack.
+
+## Using input/output plugin with RFC udf
+  * Add the RFC task to [config.json](config.json):
+    
+    ```
+        "task": [
+           {
+             "tick_script": "rfc_task.tick",
+             "task_name": "random_forest_sample",
+             "udfs": [{
+                 "type": "python",
+                 "name": "rfc_classifier"
+             }]
+           }
+        ]
+    ```
+  * Modify the [rfc_task.tick](tick_scripts/rfc_task.tick) as below, for example:
+    
+    ```
+    dbrp "eii"."autogen"
+
+    var data0 = stream
+            |from()
+                    .database('eii')
+                    .retentionPolicy('autogen')
+                    .measurement('ts_data')
+            |window()
+            .period(3s)
+            .every(4s)
+
+    data0
+            @rfc()
+            |eiiOut()
+                    .pubname('sample_publisher')
+                    .topic('sample_topic')
+    ```
+  * Add a publisher interface added to [config.json](config.json) with the same publisher name and topic 
+    i.e. 'sample_publisher' and 'sample_topic' respectively as in the above example.
+    For example:
+
+
+    **TCP mode**
+    
+    ```
+        "Publishers": [
+            {
+                "Name": "sample_publisher",
+                "Type": "zmq_tcp",
+                "EndPoint": "0.0.0.0:65034",
+                "Topics": [
+                    "sample_topic"
+                ],
+                "AllowedClients": [
+                    "TimeSeriesProfiler",
+                    "EmbSubscriber",
+                    "GoSubscriber"
+                ]
+            }
+        ]
+
+    ```
+
+    **IPC mode**
+    
+    ```
+        "Publishers": [
+            {
+                "Name": "sample_publisher",
+                "Type": "zmq_ipc",
+                "EndPoint": "/EII/sockets",
+                "Topics": [
+                    "sample_topic"
+                ],
+                "AllowedClients": [
+                    "TimeSeriesProfiler",
+                    "EmbSubscriber",
+                    "GoSubscriber"
+                ]
+            }
+        ]
+
+    ```
+
+  * Do the [provisioning](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision) and run the EII stack.

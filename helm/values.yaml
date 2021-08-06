@@ -1,0 +1,6 @@
+config:
+    kapacitor:
+      name: kapacitor
+      kapacitor_port: 9092
+      publish_port: 65034
+      IPC: false
