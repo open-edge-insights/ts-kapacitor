@@ -159,17 +159,15 @@ COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
 COPY --from=common /eii/common/util util
 COPY --from=common /root/.local/lib .local/lib
 COPY --from=common ${GOPATH}/src/github.com/golang/glog ${GOPATH}/src/github.com/golang/glog
-
 RUN chown -R ${EII_UID} .local/lib/python3.7
 RUN chown -R ${EII_UID}:${EII_UID} /tmp/ && \
     chmod -R 760 /tmp/
 RUN chmod +x ./classifier_startup.sh
-ENV PYTHONPATH $PYTHONPATH:${GOPATH}/src/github.com/influxdata/kapacitor/udf/agent/py/:/opt/conda/lib/python3.7/:/EII/.local/lib/python3.7/site-packages/
+ENV PYTHONPATH $PYTHONPATH:${GOPATH}/src/github.com/influxdata/kapacitor/udf/agent/py/:/opt/conda/lib/python3.7/:/EII/.local/lib/python3.7/site-packages/:/opt/conda/lib/python3.7/site-packages/
 ENV GOCACHE "/tmp"
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib/:/opt/conda/lib/libfabric/:${CMAKE_INSTALL_PREFIX}/lib
 RUN echo "source activate idp" >> /etc/bash.bashrc
 USER $EII_USER_NAME
 ENV PATH $PATH:/app/.local/bin:/opt/conda/bin
 HEALTHCHECK NONE
-
 ENTRYPOINT ["./classifier_startup.sh"]
