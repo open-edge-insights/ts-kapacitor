@@ -85,6 +85,7 @@ class KapacitorClassifier():
         try:
             with open(file_name, 'wb+') as fpd:
                 fpd.write(cert.encode())
+            os.chmod(file_name, 0o400)
         except (OSError, IOError) as err:
             self.logger.debug("Failed creating file: {}, Error: {} ".format(
                 file_name, err))
