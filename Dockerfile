@@ -161,6 +161,8 @@ COPY --from=common /root/.local/lib .local/lib
 COPY --from=common ${GOPATH}/src/github.com/golang/glog ${GOPATH}/src/github.com/golang/glog
 
 RUN chown -R ${EII_UID} .local/lib/python3.7
+RUN chown -R ${EII_UID}:${EII_UID} /tmp/ && \
+    chmod -R 760 /tmp/
 RUN chmod +x ./classifier_startup.sh
 ENV PYTHONPATH $PYTHONPATH:${GOPATH}/src/github.com/influxdata/kapacitor/udf/agent/py/:/opt/conda/lib/python3.7/:/EII/.local/lib/python3.7/site-packages/
 ENV GOCACHE "/tmp"
