@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-source activate idp
+source activate env
 
-python3.7 ./classifier_startup.py
+python3 ./classifier_startup.py
 

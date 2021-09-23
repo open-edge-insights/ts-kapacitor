@@ -70,21 +70,20 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-4.7.12-Linux-x86_64.sh &
 COPY conda_requirements.txt ./
 ARG INTELPYTHON_VERSION
 RUN conda update conda -y && \
-    conda config --add channels intel && \
-    conda create -y -n idp intelpython3_core=${INTELPYTHON_VERSION} python=3.7 && \
-    conda install -y -n idp --file conda_requirements.txt
+    # Installing conda packages from conda-forge channel
+    conda create -n env -c conda-forge --file conda_requirements.txt
 
 # Installing required python library
 COPY requirements.txt ./
-RUN /bin/bash -c "source activate idp && \
-    python3.7 -m pip install -r requirements.txt"
+RUN /bin/bash -c "source activate env && \
+    python3 -m pip install --user -r requirements.txt"
 
 # Installing Kapacitor from source
 ARG KAPACITOR_VERSION
 COPY ./eii_msgbus_integration.patch /tmp/eii_msgbus_integration.patch
 RUN mkdir -p ${KAPACITOR_REPO} && \
     git clone https://github.com/influxdata/kapacitor.git ${KAPACITOR_REPO} && \
-    /bin/bash -c "source activate idp && \
+    /bin/bash -c "source activate env && \
     cd ${KAPACITOR_REPO} && \
     git checkout -b v${KAPACITOR_VERSION} tags/v${KAPACITOR_VERSION} && \
     cd .. && \
@@ -114,16 +113,16 @@ ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOU
 
 
 # Build kapacitor
-RUN /bin/bash -c "source activate idp && \
+RUN /bin/bash -c "source activate env && \
     cd ${KAPACITOR_REPO} && \
     cp -pr ${GOPATH}/src/EIIMessageBus ./vendor/ && \
     cp -pr ${GOPATH}/src/ConfigMgr ./vendor/ && \
-    python3.7 build.py --clean -o $ARTIFACTS/bin"
+    python3 build.py --clean -o $ARTIFACTS/bin"
 
 RUN cd ./libs/ConfigMgr/python && \
     sed "s/\${CMAKE_CURRENT_SOURCE_DIR}/./g;s/\${CMAKE_CURRENT_BINARY_DIR}/./g" setup.py.in > setup.py && \
-    /bin/bash -c "source activate idp && \
-    python3.7 setup.py install --user && \
+    /bin/bash -c "source activate env && \
+    python3 setup.py install --user && \
     cd ../../../"
 
 # Adding classifier program
@@ -159,14 +158,14 @@ COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
 COPY --from=common /eii/common/util util
 COPY --from=common /root/.local/lib .local/lib
 COPY --from=common ${GOPATH}/src/github.com/golang/glog ${GOPATH}/src/github.com/golang/glog
-RUN chown -R ${EII_UID} .local/lib/python3.7
+RUN chown -R ${EII_UID} .local/lib/python3.9
 RUN chown -R ${EII_UID}:${EII_UID} /tmp/ && \
     chmod -R 760 /tmp/
 RUN chmod +x ./classifier_startup.sh
-ENV PYTHONPATH $PYTHONPATH:${GOPATH}/src/github.com/influxdata/kapacitor/udf/agent/py/:/opt/conda/lib/python3.7/:/EII/.local/lib/python3.7/site-packages/:/opt/conda/lib/python3.7/site-packages/
+ENV PYTHONPATH $PYTHONPATH:${GOPATH}/src/github.com/influxdata/kapacitor/udf/agent/py/:/opt/conda/lib/python3.9/:/EII/.local/lib/python3.9/site-packages/:/opt/conda/lib/python3.9/site-packages/
 ENV GOCACHE "/tmp"
 ENV LD_LIBRARY_PATH $LD_LIBRARY_PATH:/usr/local/lib/:/opt/conda/lib/libfabric/:${CMAKE_INSTALL_PREFIX}/lib
-RUN echo "source activate idp" >> /etc/bash.bashrc
+RUN echo "source activate env" >> /etc/bash.bashrc
 USER $EII_USER_NAME
 ENV PATH $PATH:/app/.local/bin:/opt/conda/bin
 HEALTHCHECK NONE
