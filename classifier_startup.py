@@ -33,6 +33,7 @@ from distutils.util import strtobool
 import cfgmgr.config_manager as cfg
 from util.util import Util
 from util.log import configure_logging
+import shlex
 
 TEMP_KAPACITOR_DIR = tempfile.gettempdir()
 KAPACITOR_CERT = os.path.join(TEMP_KAPACITOR_DIR,
@@ -331,7 +332,7 @@ def main():
     kapacitor_classifier = KapacitorClassifier(logger)
 
     logger.info("=============== STARTING kapacitor ==============")
-    host_name = os.environ["KAPACITOR_SERVER"]
+    host_name = shlex.quote(os.environ["KAPACITOR_SERVER"])
     if not host_name:
         error_log = ('Kapacitor hostname is not Set in the container. '
                      'So exiting...')
