@@ -100,6 +100,10 @@ RUN cd ${PY_WORK_DIR}/libs/ConfigMgr/python && \
     python3.7 setup.py install && \
     cd ../../../"
 
+ARG EII_UID
+RUN chown -R ${EII_UID}:${EII_UID} /tmp/ && \
+    chmod -R 760 /tmp/
+
 # Adding classifier program
 COPY . ./
 RUN chmod +x ./classifier_startup.sh
