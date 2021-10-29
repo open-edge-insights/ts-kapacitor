@@ -67,8 +67,6 @@ services:
     user: ${EII_UID}
     volumes:
        - "vol_temp_kapacitor:/tmp/"
-    ports:
-      - "$KAPACITOR_PORT:$KAPACITOR_PORT"
     secrets:
       - ca_etcd
       - etcd_Kapacitor_cert
