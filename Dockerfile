@@ -35,7 +35,7 @@ ENV PATH ${PATH}:/usr/local/go/bin:${GOPATH}/bin:/opt/conda/bin
 RUN apt-get update && \
     apt-get install -y git \
                        g++ \
-                       wget
+                       wget libcjson1 libzmq5
 
 WORKDIR /app
 ARG ARTIFACTS
@@ -54,7 +54,7 @@ RUN apt-get update && \
 # Setting timezone inside the container
 RUN echo "$HOST_TIME_ZONE" >/etc/timezone && \
     cat /etc/timezone && \
-    apt-get install -y tzdata && \ 
+    apt-get install -y tzdata && \
     ln -sf /usr/share/zoneinfo/${HOST_TIME_ZONE} /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
@@ -136,6 +136,8 @@ COPY ./config/kapacitor*.conf $ARTIFACTS/kapacitor/config/
 
 FROM base as runtime
 LABEL description="Kapacitor image"
+
+RUN apt update && apt install --no-install-recommends -y libcjson1 libzmq5
 
 ARG EII_UID
 ARG EII_USER_NAME
