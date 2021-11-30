@@ -9,56 +9,57 @@
 
 Implementation of 2 simple examples to showcase the use of a single task with multiple UDFs and multiple tasks with single UDF in Kapacitor.
 
- * Sample implemented in single task with multiple UDFs.
+- Sample implemented in single task with multiple UDFs.
    MQTT Publisher is publishing 2 parameters (temperature and humidity). TICK script is calling 2 UDFs (one written in GO, another one in python), Go-based UDF is filtering the data based on the condition (i.e. temperature > 25), similarly for the python based UDF the condition is set to “humidity > 25”, filtered data is written back to “point_classifier_results” measurement in InfluxDB.
 
- * Sample implemented in multiple tasks with single UDF.
+- Sample implemented in multiple tasks with single UDF.
    MQTT Publisher is publishing 2 parameters (temperature and humidity). One TICK script is calling Go UDF, it is filtering the data based on the condition “temperature > 25” and the data is written back to “point_classifier_results” measurement.
 
    Second TICK script is calling python UDF, it is filtering the data based on the condition “humidity > 25” and the data is written back to “humidity_classifier_results” measurement.
 
- * Samples directory contain 3 directories, kapacitor_config which is common to both the samples and the tick scripts and eii config for each sample is kept in respective directory.
- 
+- Samples directory contain 3 directories, kapacitor_config which is common to both the samples and the tick scripts and eii config for each sample is kept in respective directory.
+
 ## Steps to run the samples
 
   1. It is recommended to take a backup of the following original files before running the below mentioned steps as it will replace the original file.
-    
-  * [config](../config) directory.
-  * [config.json](../config.json) file.
+
+- [config](../config) directory.
+- [config.json](../config.json) file.
 
   2. Copy the sample [kapacitor prod mode config](kapacitor_config/kapacitor.conf) or [kapacitor dev mode config](kapacitor_config/kapacitor_devmode.conf) files based on prod or dev mode configuration of EII in the [config](../config) directory.
 
      ```
-     $ cp kapacitor_config/kapacitor.conf kapacitor_config/kapacitor_devmode.conf ../config/
+     cp kapacitor_config/kapacitor.conf kapacitor_config/kapacitor_devmode.conf ../config/
      ```
+
   3. To run the multiple UDFs in a single task sample
-    
-  * Copy the [eii_config](multi_udfs_single_task/eii_config/config.json) file and replace the [config.json](../config.json) file.
+
+- Copy the [eii_config](multi_udfs_single_task/eii_config/config.json) file and replace the [config.json](../config.json) file.
 
     ```
-    $ cp multi_udfs_single_task/eii_config/config.json ../config.json
+    cp multi_udfs_single_task/eii_config/config.json ../config.json
     ```
-    
-  * Copy the [point_classifier.tick](multi_udfs_single_task/tick_scripts/point_classifier.tick) and paste it in the [tick_scripts](../tick_scripts) directory.
+
+- Copy the [point_classifier.tick](multi_udfs_single_task/tick_scripts/point_classifier.tick) and paste it in the [tick_scripts](../tick_scripts) directory.
 
     ```
-    $ cp multi_udfs_single_task/tick_scripts/point_classifier.tick ../tick_scripts/
+    cp multi_udfs_single_task/tick_scripts/point_classifier.tick ../tick_scripts/
     ```
 
   4. To run the multiple tasks with single UDF
 
-  * Copy the [eii_config](single_udf_multi_tasks/eii_config/config.json) file and replace the [config.json](../config.json) file.
+- Copy the [eii_config](single_udf_multi_tasks/eii_config/config.json) file and replace the [config.json](../config.json) file.
 
     ```
-    $ cp single_udf_multi_tasks/eii_config/config.json ../config.json
+    cp single_udf_multi_tasks/eii_config/config.json ../config.json
     ```
 
-  * Copy the [humidity_classifier.tick](single_udf_multi_tasks/tick_scripts/humidity_classifier.tick) and [temperature_classifier.tick](single_udf_multi_tasks/tick_scripts/temperature_classifier.tick) and paste it in the [tick_scripts](../tick_scripts) directory.
+- Copy the [humidity_classifier.tick](single_udf_multi_tasks/tick_scripts/humidity_classifier.tick) and [temperature_classifier.tick](single_udf_multi_tasks/tick_scripts/temperature_classifier.tick) and paste it in the [tick_scripts](../tick_scripts) directory.
 
     ```
-    $ cp single_udf_multi_tasks/tick_scripts/humidity_classifier.tick ../tick_scripts/
+    cp single_udf_multi_tasks/tick_scripts/humidity_classifier.tick ../tick_scripts/
 
-    $ cp single_udf_multi_tasks/tick_scripts/temperature_classifier.tick ../tick_scripts/
+    cp single_udf_multi_tasks/tick_scripts/temperature_classifier.tick ../tick_scripts/
     ```
 
   5. Please go through the below sections to bring up EII stack:
@@ -66,18 +67,20 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
       - [../README.md#provision](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision)
       - [../README.md#build-and-run-eii-videotimeseries-use-cases](https://github.com/open-edge-insights/eii-core/blob/master/README.md#build-and-run-eii-videotimeseries-use-cases)
 
-  6. To start the mqtt-publisher with temperature and humidity data, please refer [tools/mqtt-publisher/README.md](https://github.com/open-edge-insights/eii-tools/blob/master/mqtt-publisher/README.md)
+  6. To start the mqtt-publisher with temperature and humidity data, please refer [tools/mqtt-publisher/README.md](https://github.com/open-edge-insights/eii-tools/blob/master/mqtt/README.md)
 
 ## Steps to verify the results in single task with multiple UDFs
 
   1. InfluxDBConnector logs output
 
      Command
+
      ```
-     $ docker logs -f ia_influxdbconnector
+     docker logs -f ia_influxdbconnector
      ```
 
      Output
+
      ```
      I0717 00:53:46.636838      10 pubManager.go:121] Published message: map[data:point_data,host=ia_telegraf,topic=temperature/simulated/0 humidity=28.57107003902059,ts=1594927426.634632,temperature=26.655493463976832 1594927426635557092 idbconn_pub:true]
      I0717 00:53:46.639011      10 pubManager.go:121] Published message: map[data:point_classifier_results,host=ia_telegraf,topic=temperature/simulated/0 humidity=28.57107003902059,temperature=26.655493463976832,ts=1594927426.634632 1594927426635557092 idbconn_pub:true]
@@ -94,32 +97,32 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
 
   2. Check data in the InfluxDB
 
-  * Enter in the container using the following command
+- Enter in the container using the following command
 
     ```
-    $ docker exec -it ia_influxdbconnector bash
+    docker exec -it ia_influxdbconnector bash
     ```
 
-  * Use the following to enter into the database
+- Use the following to enter into the database
 
     prod mode
 
     ```
-    $ influx -ssl -unsafeSsl -username "username" -password "password" -database "database_name"
+    influx -ssl -unsafeSsl -username "username" -password "password" -database "database_name"
     ```
 
     dev mode
 
     ```
-    $ influx -username "username" -password "password" -database "database_name"
+    influx -username "username" -password "password" -database "database_name"
     ```
 
     replace the "username", "database", and "password" keys with your DB username, password and DB name.`
 
-  * Use Influx CLI command to interact with DB.
+- Use Influx CLI command to interact with DB.
 
     ```
-    $ show measurements
+    show measurements
     ```
 
     Output of the command
@@ -133,10 +136,10 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
     point_data
     ```
 
-  * To see the data in point_classifier_results measurement use the following command
+- To see the data in point_classifier_results measurement use the following command
 
     ```
-    $ select * from point_classifier_results
+    select * from point_classifier_results
     ```
 
     Sample output of the command
@@ -155,6 +158,7 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
     1594927744936530293 ia_telegraf 26.844547285321887 29.498420224006598 temperature/simulated/0 1594927744.9355264
     1594927753945020633 ia_telegraf 25.71321771687117  25.07137538609002  temperature/simulated/0 1594927753.9441714
     ```
+
     Here, both the temperature and himidity data is above 25
 
 ## Steps to verify the results in multiple tasks with single UDF
@@ -162,11 +166,13 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
   1. InfluxDBConnector logs output
 
      Command
+
      ```
-     $ docker logs -f ia_influxdbconnector
+     docker logs -f ia_influxdbconnector
      ```
 
      Output
+
      ```
      I0716 23:58:01.428896      10 pubManager.go:121] Published message: map[data:point_data,host=ia_telegraf,topic=temperature/simulated/0 humidity=23.50196006313319,ts=1594924081.4278295,temperature=25.758773258956786 1594924081428303867 idbconn_pub:true]
      I0716 23:58:01.429801      10 pubManager.go:121] Published message: map[data:point_classifier_results,host=ia_telegraf,topic=temperature/simulated/0 humidity=23.50196006313319,temperature=25.758773258956786,ts=1594924081.4278295 1594924081428303867 idbconn_pub:true]
@@ -181,32 +187,32 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
 
   2. Check data in the InfluxDB
 
-  * Enter in the container using the following command
+- Enter in the container using the following command
 
     ```
-    $ docker exec -it ia_influxdbconnector bash
+    docker exec -it ia_influxdbconnector bash
     ```
 
-  * Use the following to enter into the database
+- Use the following to enter into the database
 
     prod mode
 
     ```
-    $ influx -ssl -unsafeSsl -username "username" -password "password" -database "database_name"
+    influx -ssl -unsafeSsl -username "username" -password "password" -database "database_name"
     ```
 
     dev mode
 
     ```
-    $ influx -username "username" -password "password" -database "database_name"
+    influx -username "username" -password "password" -database "database_name"
     ```
 
     replace the "username", "database", and "password" keys with your DB username, password and DB name.`
 
-  * Use Influx CLI command to interact with DB.
+- Use Influx CLI command to interact with DB.
 
     ```
-    $ show measurements
+    show measurements
     ```
 
     Output of the command
@@ -221,10 +227,10 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
     point_data
     ```
 
-  * To see the data in point_classifier_results measurement use the following command
+- To see the data in point_classifier_results measurement use the following command
 
     ```
-    $ select * from point_classifier_results
+    select * from point_classifier_results
     ```
 
     Sample output of the command
@@ -251,10 +257,10 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
 
     Here, all the temperature data is above 25
 
-  * To see the data in humidity_classifier_results measurement use the following command
+- To see the data in humidity_classifier_results measurement use the following command
 
     ```
-    $ select * from humidity_classifier_results
+    select * from humidity_classifier_results
     ```
 
     Sample output of the command
@@ -280,4 +286,5 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
     1594922475704646142 ia_telegraf 27.423792582269076 12.596418464102804 temperature/simulated/0 1594922475.7040672
     1594922479707734013 ia_telegraf 27.770484735726605 19.20584244268835  temperature/simulated/0 1594922479.706727
     ```
+
     Here, all the humidity data is above 25
