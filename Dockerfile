@@ -35,7 +35,7 @@ ENV PATH ${PATH}:/usr/local/go/bin:${GOPATH}/bin:/opt/conda/bin
 RUN apt-get update && \
     apt-get install -y git \
                        g++ \
-                       wget libcjson1 libzmq5
+                       wget libcjson1 libzmq5 zlib1g
 
 WORKDIR /app
 ARG ARTIFACTS
@@ -137,7 +137,7 @@ COPY ./config/kapacitor*.conf $ARTIFACTS/kapacitor/config/
 FROM base as runtime
 LABEL description="Kapacitor image"
 
-RUN apt update && apt install --no-install-recommends -y libcjson1 libzmq5
+RUN apt update && apt install --no-install-recommends -y libcjson1 libzmq5 zlib1g
 
 ARG EII_UID
 ARG EII_USER_NAME
