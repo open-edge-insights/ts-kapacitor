@@ -26,8 +26,8 @@ import (
     "github.com/influxdata/kapacitor/edge"
     "github.com/influxdata/kapacitor/pipeline"
     "github.com/golang/glog"
-    eiicfgmgr "ConfigMgr/eiiconfigmgr"
-    eiimsgbus "EIIMessageBus/eiimsgbus"
+    eiicfgmgr "github.com/open-edge-insights/eii-configmgr-go/eiiconfigmgr"
+    eiimsgbus "github.com/open-edge-insights/eii-messagebus-go/eiimsgbus"
 )
 
 type EiiOutNode struct {

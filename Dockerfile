@@ -102,6 +102,7 @@ COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
 COPY --from=common ${GOPATH}/src ${GOPATH}/src/
 COPY --from=common /eii/common/util util
 COPY --from=common /eii/common/libs libs
+COPY --from=common ${GOPATH}/src/ ${GOPATH}/src/
 
 ENV PATH="$PATH:/usr/local/go/bin" \
     PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" \
@@ -111,12 +112,13 @@ ENV PATH="$PATH:/usr/local/go/bin" \
 ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -fPIC" \
     CGO_LDFLAGS="$CGO_LDFLAGS -L${CMAKE_INSTALL_PREFIX}/lib -z noexecstack -z relro -z now"
 
-
+RUN mkdir -p ${KAPACITOR_REPO}/vendor/github.com/open-edge-insights/eii-messagebus-go/ \
+             ${KAPACITOR_REPO}/vendor/github.com/open-edge-insights/eii-configmgr-go/
 # Build kapacitor
 RUN /bin/bash -c "source activate env && \
     cd ${KAPACITOR_REPO} && \
-    cp -pr ${GOPATH}/src/EIIMessageBus ./vendor/ && \
-    cp -pr ${GOPATH}/src/ConfigMgr ./vendor/ && \
+    cp -pr ${GOPATH}/src/EIIMessageBus/* ${KAPACITOR_REPO}/vendor/github.com/open-edge-insights/eii-messagebus-go/ && \
+    cp -pr ${GOPATH}/src/ConfigMgr/* ${KAPACITOR_REPO}/vendor/github.com/open-edge-insights/eii-configmgr-go/ && \
     python3 build.py --clean -o $ARTIFACTS/bin"
 
 RUN cd ./libs/ConfigMgr/python && \

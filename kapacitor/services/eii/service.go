@@ -34,9 +34,9 @@ import (
     "github.com/influxdata/influxdb/models"
     "github.com/influxdata/influxdb/services/meta"
     "github.com/influxdata/influxdb/tsdb"
-    eiicfgmgr "ConfigMgr/eiiconfigmgr"
-    eiimsgbus "EIIMessageBus/eiimsgbus"
-    "EIIMessageBus/pkg/types"
+    eiicfgmgr "github.com/open-edge-insights/eii-configmgr-go/eiiconfigmgr"
+    eiimsgbus "github.com/open-edge-insights/eii-messagebus-go/eiimsgbus"
+    "github.com/open-edge-insights/eii-messagebus-go/pkg/types"
 )
 
 // statistics gathered by the eii service.
