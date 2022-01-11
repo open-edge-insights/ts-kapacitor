@@ -82,10 +82,10 @@ RUN /bin/bash -c "source activate env && \
 ARG KAPACITOR_VERSION
 COPY ./eii_msgbus_integration.patch /tmp/eii_msgbus_integration.patch
 RUN mkdir -p ${KAPACITOR_REPO} && \
-    git clone https://github.com/influxdata/kapacitor.git ${KAPACITOR_REPO} && \
+    git clone --single-branch -b v${KAPACITOR_VERSION} \
+    https://github.com/influxdata/kapacitor.git ${KAPACITOR_REPO} && \
     /bin/bash -c "source activate env && \
     cd ${KAPACITOR_REPO} && \
-    git checkout -b v${KAPACITOR_VERSION} tags/v${KAPACITOR_VERSION} && \
     cd .. && \
     patch -p0 < /tmp/eii_msgbus_integration.patch && \
     rm -rf /tmp/eii_msgbus_integration.patch"
