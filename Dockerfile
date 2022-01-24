@@ -69,9 +69,8 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-4.7.12-Linux-x86_64.sh &
 
 COPY conda_requirements.txt ./
 ARG INTELPYTHON_VERSION
-RUN conda update conda -y && \
     # Installing conda packages from conda-forge channel
-    conda create -n env -c conda-forge --file conda_requirements.txt
+RUN conda create -n env -c conda-forge --file conda_requirements.txt
 
 # Installing required python library
 COPY requirements.txt ./
