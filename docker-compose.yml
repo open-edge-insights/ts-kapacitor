@@ -64,6 +64,8 @@ services:
       KAPACITOR_SERVER: 'ia_kapacitor'
       KAPACITOR_PORT: $KAPACITOR_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
+      INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}
+      INFLUXDB_PASSWORD: ${INFLUXDB_PASSWORD}
     networks:
       - eii
     volumes:

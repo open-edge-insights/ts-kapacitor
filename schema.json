@@ -7,10 +7,7 @@
   "properties": {
     "influxdb": {
       "type": "object",
-      "required": [
-        "username",
-        "password"
-      ],
+      "required": [],
       "properties": {
         "username": {
           "type": "string",

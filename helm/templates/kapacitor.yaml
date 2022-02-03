@@ -83,6 +83,10 @@ spec:
           value: '{{ .Values.config.etcd.client_port }}'
         - name:  ETCD_PREFIX
           value: ''
+        - name: INFLUXDB_USERNAME
+          value: '{{ .Values.env.INFLUXDB_USERNAME }}'
+        - name: INFLUXDB_PASSWORD
+          value: '{{ .Values.env.INFLUXDB_PASSWORD }}'
         - name: KAPACITOR_URL
           value: "http://kapacitor:{{ .Values.config.kapacitor.kapacitor_port }}/"
         - name: KAPACITOR_UNSAFE_SSL
