@@ -246,13 +246,13 @@ func (s *Service) serve() {
     }
     defer configmgr.Destroy()
 
-    sub_count, _ := configmgr.GetNumSubscribers()
+    subCount, _ := configmgr.GetNumSubscribers()
 
-    for sub_index := 0; sub_index < sub_count; sub_index++ {
-        subctx, err := configmgr.GetSubscriberByIndex(sub_index)
+    for subIndex := 0; subIndex < subCount; subIndex++ {
+        subctx, err := configmgr.GetSubscriberByIndex(subIndex)
         if err != nil {
             s.Logger.Printf("Error: %v to GetSubscriberByIndex %d",
-                err, sub_index)
+                err, subIndex)
             return
         }
         defer subctx.Destroy()
@@ -274,7 +274,7 @@ func (s *Service) serve() {
             s.Logger.Printf("Error: %v to GetEndPoints", err)
             return
         }
-        s.Logger.Printf("Info: Subscriber# %v endpoints: %v", sub_index, endpoint)
+        s.Logger.Printf("Info: Subscriber# %v endpoints: %v", subIndex, endpoint)
 
         client, err := eiimsgbus.NewMsgbusClient(config)
         if err != nil {

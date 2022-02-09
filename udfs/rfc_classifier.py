@@ -1,11 +1,6 @@
 from kapacitor.udf.agent import Agent, Handler
 import math
 import json
-from kapacitor.udf import udf_pb2
-import sys
-import pandas as pd
-from sklearnex import patch_sklearn
-patch_sklearn()
 from sklearn.metrics import classification_report
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -13,6 +8,12 @@ import time
 import logging
 import os
 from distutils.util import strtobool
+from kapacitor.udf import udf_pb2
+import sys
+import pandas as pd
+from sklearnex import patch_sklearn
+patch_sklearn()
+
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s:%(name)s: %(message)s')
 logger = logging.getLogger()
@@ -32,7 +33,7 @@ class RfcHandler(Handler):
         training = training.sample(frac=1)
 
         y = training.label
-        X = training.iloc[:,:-1]
+        X = training.iloc[:, :-1]
         X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                             test_size=0.2,
                                                             random_state=20,
