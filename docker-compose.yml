@@ -72,8 +72,8 @@ services:
        - "vol_temp_kapacitor:/tmp/"
        - "vol_eii_socket:${SOCKET_DIR}"
        - "vol_dev_shm:/dev/shm"
-       - ./Certificates/Kapacitor:/run/secrets/Kapacitor
-       - ./Certificates/rootca:/run/secrets/rootca
+       - ./Certificates/Kapacitor:/run/secrets/Kapacitor:ro
+       - ./Certificates/rootca/cacert.pem:/run/secrets/rootca/cacert.pem:ro
     ports:
       - "$KAPACITOR_PORT:$KAPACITOR_PORT"
 
