@@ -57,11 +57,11 @@ services:
       NO_PROXY: "${ETCD_HOST},ia_influxdbconnector,ia_kapacitor"
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
-      KAPACITOR_URL: http://$HOST_IP:$KAPACITOR_PORT/
+      KAPACITOR_URL: http://ia_kapacitor:$KAPACITOR_PORT/
       KAPACITOR_UNSAFE_SSL: "true"
       KAPACITOR_INFLUXDB_0_URLS_0: http://ia_influxdbconnector:$INFLUXDB_PORT/
-      INFLUX_SERVER: ${HOST_IP}
-      KAPACITOR_SERVER: ${HOST_IP}
+      INFLUX_SERVER: 'ia_influxdbconnector'
+      KAPACITOR_SERVER: 'ia_kapacitor'
       KAPACITOR_PORT: $KAPACITOR_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
       INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}
