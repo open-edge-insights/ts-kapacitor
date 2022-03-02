@@ -35,7 +35,7 @@ ENV PATH ${PATH}:/usr/local/go/bin:${GOPATH}/bin:/opt/conda/bin
 RUN apt-get update && \
     apt-get install -y git \
                        g++ \
-                       wget libcjson1 libzmq5 zlib1g
+                       wget
 
 WORKDIR /app
 ARG ARTIFACTS
@@ -67,6 +67,32 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-4.7.12-Linux-x86_64.sh &
     ./Miniconda3-4.7.12-Linux-x86_64.sh -b -p /opt/conda && \
     rm Miniconda3-4.7.12-Linux-x86_64.sh
 
+RUN apt-get update && apt-get install make cmake -y
+
+ARG CMAKE_INSTALL_PREFIX
+ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+
+# Install libzmq
+RUN rm -rf deps && \
+    mkdir -p deps && \
+    cd deps && \
+    wget -q --show-progress https://github.com/zeromq/libzmq/releases/download/v4.3.4/zeromq-4.3.4.tar.gz -O zeromq.tar.gz && \
+    tar xf zeromq.tar.gz && \
+    cd zeromq-4.3.4 && \
+    ./configure --prefix=${CMAKE_INSTALL_PREFIX} && \
+    make install
+
+# Install cjson
+RUN rm -rf deps && \
+    mkdir -p deps && \
+    cd deps && \
+    wget -q --show-progress https://github.com/DaveGamble/cJSON/archive/v1.7.12.tar.gz -O cjson.tar.gz && \
+    tar xf cjson.tar.gz && \
+    cd cJSON-1.7.12 && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_PREFIX}/include -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} .. && \
+    make install
+
 COPY conda_requirements.txt ./
 ARG INTELPYTHON_VERSION
     # Installing conda packages from conda-forge channel
@@ -94,8 +120,6 @@ COPY ./kapacitor/services/  \
 COPY ./kapacitor/eii_out.go  ${KAPACITOR_REPO}/
 COPY ./kapacitor/pipeline/eii_out.go ${KAPACITOR_REPO}/pipeline/
 
-ARG CMAKE_INSTALL_PREFIX
-ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/include ${CMAKE_INSTALL_PREFIX}/include
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
 COPY --from=common ${GOPATH}/src ${GOPATH}/src/
@@ -138,8 +162,6 @@ COPY ./config/kapacitor*.conf $ARTIFACTS/kapacitor/config/
 FROM base as runtime
 LABEL description="Kapacitor image"
 
-RUN apt update && apt install --no-install-recommends -y libcjson1 libzmq5 zlib1g
-
 ARG EII_UID
 ARG EII_USER_NAME
 RUN groupadd $EII_USER_NAME -g $EII_UID && \
@@ -157,7 +179,8 @@ COPY --from=builder $ARTIFACTS/kapacitor .
 COPY --from=builder /app/.local/lib .local/lib
 COPY --from=builder /opt/conda /opt/conda
 COPY --from=builder ${GOPATH}/src/github.com ${GOPATH}/src/github.com
-COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
+COPY --from=builder ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
+COPY --from=builder ${CMAKE_INSTALL_PREFIX}/include ${CMAKE_INSTALL_PREFIX}/include
 COPY --from=common /eii/common/util util
 COPY --from=common /root/.local/lib .local/lib
 COPY --from=common ${GOPATH}/src/github.com/golang/glog ${GOPATH}/src/github.com/golang/glog
