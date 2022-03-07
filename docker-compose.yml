@@ -38,7 +38,7 @@ services:
         UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
         EII_UID: ${EII_UID}
         EII_USER_NAME: ${EII_USER_NAME}
-    image: ${DOCKER_REGISTRY}ia_kapacitor:${EII_VERSION}
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_kapacitor:${EII_VERSION}
     container_name: ia_kapacitor
     hostname: ia_kapacitor
     read_only: true
