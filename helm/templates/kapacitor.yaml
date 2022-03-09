@@ -56,7 +56,7 @@ spec:
       {{- end }}
       containers:
       - name: ia-kapacitor
-        image: {{ .Values.DOCKER_REGISTRY }}ia_kapacitor:{{ .Values.EII_VERSION }}
+        image: {{ .Values.DOCKER_REGISTRY }}openedgeinsights/ia_kapacitor:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         securityContext:
           privileged: true
