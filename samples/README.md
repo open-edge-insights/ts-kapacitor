@@ -1,11 +1,14 @@
-**Contents**
+# Contents
 
-- [Introduction to samples of multiple UDFs in a single task and multiple tasks with single UDF](#introduction-to-samples-of-multiple-udfs-in-a-single-task-and-multiple-tasks-with-single-udf)
+- [Contents](#contents)
+  - [Introduction to samples of multiple UDFs in a single task and multiple tasks with single UDF](#introduction-to-samples-of-multiple-udfs-in-a-single-task-and-multiple-tasks-with-single-udf)
   - [Steps to run the samples](#steps-to-run-the-samples)
   - [Steps to verify the results in single task with multiple UDFs](#steps-to-verify-the-results-in-single-task-with-multiple-udfs)
   - [Steps to verify the results in multiple tasks with single UDF](#steps-to-verify-the-results-in-multiple-tasks-with-single-udf)
 
-# Introduction to samples of multiple UDFs in a single task and multiple tasks with single UDF
+## Introduction to samples of multiple UDFs in a single task and multiple tasks with single UDF
+
+>**Note:** In this document, you will find labels of 'Edge Insights for Industrial (EII)' for filenames, paths, code snippets, and so on. Consider the references of EII as Open Edge Insights (OEI). This is due to the product name change of EII as OEI.
 
 Implementation of 2 simple examples to showcase the use of a single task with multiple UDFs and multiple tasks with single UDF in Kapacitor.
 
@@ -26,7 +29,7 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
 - [config](../config) directory.
 - [config.json](../config.json) file.
 
-  2. Copy the sample [kapacitor prod mode config](kapacitor_config/kapacitor.conf) or [kapacitor dev mode config](kapacitor_config/kapacitor_devmode.conf) files based on prod or dev mode configuration of EII in the [config](../config) directory.
+  2. Copy the sample [kapacitor prod mode config](kapacitor_config/kapacitor.conf) or [kapacitor dev mode config](kapacitor_config/kapacitor_devmode.conf) files based on prod or dev mode configuration of OEI in the [config](../config) directory.
 
      ```
      cp kapacitor_config/kapacitor.conf kapacitor_config/kapacitor_devmode.conf ../config/
@@ -62,7 +65,7 @@ Implementation of 2 simple examples to showcase the use of a single task with mu
     cp single_udf_multi_tasks/tick_scripts/temperature_classifier.tick ../tick_scripts/
     ```
 
-  5. Please go through the below sections to bring up EII stack:
+  5. Please go through the below sections to bring up OEI stack:
       - [../README.md#generate-deployment-and-configuration-files](https://github.com/open-edge-insights/eii-core/blob/master/README.md#generate-deployment-and-configuration-files)
       - [../README.md#provision](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision)
       - [../README.md#build-and-run-eii-videotimeseries-use-cases](https://github.com/open-edge-insights/eii-core/blob/master/README.md#build-and-run-eii-videotimeseries-use-cases)
