@@ -58,8 +58,6 @@ spec:
       - name: ia-kapacitor
         image: {{ .Values.DOCKER_REGISTRY }}ia_kapacitor:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          privileged: true
         volumeMounts:
         {{- if eq .Values.config.kapacitor.IPC true}}
         - name: {{ .Values.volumes.eii_socket.name }}
