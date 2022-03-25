@@ -38,7 +38,7 @@ services:
         UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
         EII_UID: ${EII_UID}
         EII_USER_NAME: ${EII_USER_NAME}
-    image: ${DOCKER_REGISTRY}ia_kapacitor:${EII_VERSION}
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_kapacitor:${EII_VERSION}
     container_name: ia_kapacitor
     hostname: ia_kapacitor
     read_only: true
@@ -64,18 +64,18 @@ services:
       KAPACITOR_SERVER: 'ia_kapacitor'
       KAPACITOR_PORT: $KAPACITOR_PORT
       ETCD_PREFIX: ${ETCD_PREFIX}
-      CertType: "pem,zmq"
+      INFLUXDB_USERNAME: ${INFLUXDB_USERNAME}
+      INFLUXDB_PASSWORD: ${INFLUXDB_PASSWORD}
     networks:
       - eii
     volumes:
        - "vol_temp_kapacitor:/tmp/"
        - "vol_eii_socket:${SOCKET_DIR}"
+       - "vol_dev_shm:/dev/shm"
+       - ./Certificates/Kapacitor:/run/secrets/Kapacitor:ro
+       - ./Certificates/rootca/cacert.pem:/run/secrets/rootca/cacert.pem:ro
     ports:
       - "$KAPACITOR_PORT:$KAPACITOR_PORT"
-    secrets:
-      - ca_etcd
-      - etcd_Kapacitor_cert
-      - etcd_Kapacitor_key
 
 volumes:
   vol_temp_kapacitor:
@@ -84,8 +84,9 @@ volumes:
       type: tmpfs
       device: tmpfs
 
-secrets:
-  etcd_Kapacitor_cert:
-    file: provision/Certificates/Kapacitor/Kapacitor_client_certificate.pem
-  etcd_Kapacitor_key:
-    file: provision/Certificates/Kapacitor/Kapacitor_client_key.pem
+  vol_dev_shm:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+

@@ -56,10 +56,8 @@ spec:
       {{- end }}
       containers:
       - name: ia-kapacitor
-        image: {{ .Values.DOCKER_REGISTRY }}ia_kapacitor:{{ .Values.EII_VERSION }}
+        image: {{ .Values.DOCKER_REGISTRY }}openedgeinsights/ia_kapacitor:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          privileged: true
         volumeMounts:
         {{- if eq .Values.config.kapacitor.IPC true}}
         - name: {{ .Values.volumes.eii_socket.name }}
@@ -83,6 +81,10 @@ spec:
           value: '{{ .Values.config.etcd.client_port }}'
         - name:  ETCD_PREFIX
           value: ''
+        - name: INFLUXDB_USERNAME
+          value: '{{ .Values.env.INFLUXDB_USERNAME }}'
+        - name: INFLUXDB_PASSWORD
+          value: '{{ .Values.env.INFLUXDB_PASSWORD }}'
         - name: KAPACITOR_URL
           value: "http://kapacitor:{{ .Values.config.kapacitor.kapacitor_port }}/"
         - name: KAPACITOR_UNSAFE_SSL
@@ -118,7 +120,7 @@ spec:
           value: "kapacitor"
         {{ if eq .Values.env.DEV_MODE false}}
         - name: CONFIGMGR_CACERT
-          value: "/run/secrets/etcd/ca_certificate.pem"
+          value: "/run/secrets/etcd/cacert.pem"
         - name: CONFIGMGR_CERT
           value: "/run/secrets/etcd/Kapacitor_client_certificate.pem"
         - name: CONFIGMGR_KEY
@@ -136,8 +138,8 @@ spec:
         secret:
           secretName: eii-certs
           items:
-          - key: ca_certificate.pem
-            path: ca_certificate.pem
+          - key: cacert.pem
+            path: cacert.pem
           - key: Kapacitor_client_certificate.pem
             path: Kapacitor_client_certificate.pem
           - key: Kapacitor_client_key.pem

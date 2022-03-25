@@ -1,9 +1,7 @@
 {
     "config": {
-        "influxdb": {
-            "username": "admin",
-            "password": "admin123"
-        },
+        "cert_type": ["zmq", "pem"],
+        "influxdb": {},
         "task": [{
          "tick_script": "go_point_classifier.tick",
              "task_name": "go_point_classifier",

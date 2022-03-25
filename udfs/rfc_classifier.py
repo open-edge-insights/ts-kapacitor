@@ -1,16 +1,19 @@
 from kapacitor.udf.agent import Agent, Handler
 import math
 import json
-from kapacitor.udf import udf_pb2
-import sys
-import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
 from sklearn.ensemble import RandomForestClassifier
-import daal4py as d4p
+from sklearn.model_selection import train_test_split
 import time
 import logging
 import os
 from distutils.util import strtobool
+from kapacitor.udf import udf_pb2
+import sys
+import pandas as pd
+from sklearnex import patch_sklearn
+patch_sklearn()
+
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s:%(name)s: %(message)s')
 logger = logging.getLogger()
@@ -29,25 +32,14 @@ class RfcHandler(Handler):
         training = pd.read_csv('/EII/training_data_sets/Log_rf.csv')
         training = training.sample(frac=1)
 
-        y = training[['label']]
+        y = training.label
         X = training.iloc[:, :-1]
         X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                             test_size=0.2,
                                                             random_state=20,
                                                             stratify=y)
-        # The number of cores is tuned based on the hardware and dataset
-        no_of_cores = 10
-        d4p.daalinit(no_of_cores)
-        # maxDepth, numOfTree are tuned based on dataset
-        maxDepth = 50
-        numOfTree = 600
-        train_algo = d4p.decision_forest_classification_training(
-            maxTreeDepth=maxDepth,
-            nClasses=2, nTrees=numOfTree,
-            engine=d4p.engines_mt2203(seed=0),
-            varImportance='MDI', bootstrap=True)
-
-        self.train_result = train_algo.compute(X_train, y_train)
+        self.rfc = RandomForestClassifier(n_estimators=600)
+        self.rfc.fit(X_train, y_train)
         logging.info("training complete...")
 
     def info(self):
@@ -182,13 +174,8 @@ class RfcHandler(Handler):
                     'Message.Log.Name38': jsonObj['Message']['Log']['Name38']},
                     ignore_index=True)
 
-        # Inference with daal4py
-        self.predict_algo = d4p.decision_forest_classification_prediction(2)
-        self.predict_result = self.predict_algo.compute(
-            df, self.train_result.model)
-        self.rfc_prediction_pred = self.predict_result.prediction
-        self.rfc_prediction = self.rfc_prediction_pred[0, 0].item()
-        self.pred.append(self.rfc_prediction)
+        predictions = self.rfc.predict(df)
+        self.pred.append(predictions)
         if self.profiling_mode:
             ts2 = (time.time_ns() / 1e6)
             self.udf_exit.append(ts2)
