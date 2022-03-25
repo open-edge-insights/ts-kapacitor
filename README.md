@@ -1,20 +1,20 @@
 # Contents
 
 - [Contents](#contents)
-  - [Point-data (Time-series data) analytics introduction](#point-data-time-series-data-analytics-introduction)
+  - [Point-data (Time series data) analytics introduction](#point-data-time-series-data-analytics-introduction)
     - [Starting the example](#starting-the-example)
     - [Purpose of Telegraf](#purpose-of-telegraf)
     - [Purpose of Kapacitor](#purpose-of-kapacitor)
     - [Custom UDFs available in the udfs directory](#custom-udfs-available-in-the-udfs-directory)
     - [Steps to configure the UDFs in Kapacitor](#steps-to-configure-the-udfs-in-kapacitor)
     - [Steps to run the samples of multiple UDFs in a single task and multiple tasks using single UDF](#steps-to-run-the-samples-of-multiple-udfs-in-a-single-task-and-multiple-tasks-using-single-udf)
-  - [Kapacitor input and output plugins](#kapacitor-input-and-output-plugins)
-    - [Purpose of plugins](#purpose-of-plugins)
-    - [Using input plugin](#using-input-plugin)
-    - [Using output plugin](#using-output-plugin)
-    - [Using input/output plugin with RFC UDF](#using-inputoutput-plugin-with-rfc-udf)
+    - [Kapacitor input and output plugins](#kapacitor-input-and-output-plugins)
+      - [Purpose of plugins](#purpose-of-plugins)
+      - [Using input plugin](#using-input-plugin)
+      - [Using output plugin](#using-output-plugin)
+      - [Using input/output plugin with RFC UDF](#using-inputoutput-plugin-with-rfc-udf)
 
-## Point-data (Time-series data) analytics introduction
+## Point-data (Time series data) analytics introduction
 
 >**Note:** In this document, you will find labels of 'Edge Insights for Industrial (EII)' for filenames, paths, code snippets, and so on. Consider the references of EII as Open Edge Insights (OEI). This is due to the product name change of EII as OEI.
 
@@ -265,9 +265,9 @@ For more information on the supported input and output plugins please refer
 
 Refer to the [samples/README](https://github.com/open-edge-insights/eii-samples/blob/master/README.md)
 
-## Kapacitor input and output plugins
+### Kapacitor input and output plugins
 
-### Purpose of plugins
+#### Purpose of plugins
 
 The plugins allow Kapacitor to interact directly with OEI message bus. They use message bus publisher/subscriber interface. Using these plugins Kapacitor can now receive data from various OEI publishers and send data to various OEI subscribers. Hence, it's possible to have a time-series use case without InfluxDB and Kapacitor can act as an independent analytical engine.
 
@@ -275,7 +275,7 @@ A simple use case flow can be as follows:
 
 MQTT-temp-sensor-->Telegraf-->Kapacitor-->TimeseriesProfiler
 
-### Using input plugin
+#### Using input plugin
 
 - Configure the OEI input plugin in [config/kapacitor.conf](config/kapacitor.conf) and [config/kapacitor_devmode.conf](config/kapacitor_devmode.conf)
   For example:
@@ -356,7 +356,7 @@ MQTT-temp-sensor-->Telegraf-->Kapacitor-->TimeseriesProfiler
   docker exec ia_kapacitor tail -f /tmp/log/kapacitor/kapacitor.log
   ```
 
-### Using output plugin
+#### Using output plugin
 
 - Create/modify a tick script to use 'eiiOut' node to send the data using publisher interface
   For example, you may modify the profiling UDF as below:
@@ -420,7 +420,7 @@ MQTT-temp-sensor-->Telegraf-->Kapacitor-->TimeseriesProfiler
 
 - Do the [provisioning](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision) and run the OEI stack.
 
-### Using input/output plugin with RFC UDF
+#### Using input/output plugin with RFC UDF
 
 - Add the RFC task to [config.json](config.json):
 
